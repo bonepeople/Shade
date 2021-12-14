@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    compileSdk rootProject.android.compileSdk
+    compileSdk rootProject.androidConfig.compileSdk
 
     defaultConfig {
         applicationId "com.bonepeople.android.shade.simple"
-        minSdk rootProject.android.minSdk
-        targetSdk rootProject.android.targetSdk
-        versionCode rootProject.android.versionCode
-        versionName rootProject.android.versionName
+        minSdk rootProject.androidConfig.minSdk
+        targetSdk rootProject.androidConfig.targetSdk
+        versionCode rootProject.androidConfig.versionCode
+        versionName rootProject.androidConfig.versionName
     }
 
     buildTypes {

@@ -1,16 +1,17 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'maven-publish'
 }
 
 android {
-    compileSdk rootProject.android.compileSdk
+    compileSdk rootProject.androidConfig.compileSdk
 
     defaultConfig {
-        minSdk rootProject.android.minSdk
-        targetSdk rootProject.android.targetSdk
-        versionCode rootProject.android.versionCode
-        versionName rootProject.android.versionName
+        minSdk rootProject.androidConfig.minSdk
+        targetSdk rootProject.androidConfig.targetSdk
+        versionCode rootProject.androidConfig.versionCode
+        versionName rootProject.androidConfig.versionName
 
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -53,4 +54,17 @@ dependencies {
 
     // MMKV https://github.com/tencent/mmkv
     implementation 'com.tencent:mmkv-static:1.2.9'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = rootProject.publishConfig.groupId
+                artifactId = rootProject.publishConfig.artifactId
+                version = rootProject.publishConfig.publishVersion
+            }
+        }
+    }
 }

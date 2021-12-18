@@ -8,7 +8,7 @@ import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.shade.data.ShadeConfig
 import com.bonepeople.android.shade.global.AppInformation
 import com.bonepeople.android.shade.global.DataRepository
-import com.bonepeople.android.shade.util.AESUtil
+import com.bonepeople.android.shade.util.EncryptUtil
 import com.bonepeople.android.shade.util.GsonUtil
 import com.bonepeople.android.shade.util.MMKVUtil
 import kotlinx.coroutines.GlobalScope
@@ -41,7 +41,7 @@ object Lighting {
         GlobalScope.launch {
             DataRepository.getConfig(info)
                 .onSuccess {
-                    val json = AESUtil.decrypt(it)
+                    val json = EncryptUtil.decryptByAES(it, appInformation.secret, appInformation.salt)
                     MMKVUtil.putString("ShadeConfig", json)
                     config = GsonUtil.toObject(json)
                 }

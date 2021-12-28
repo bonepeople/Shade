@@ -15,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
-object DataRepository {
+internal object DataRepository {
     private const val BASE = "http://bonepeople.tpddns.cn:8192/"
     private val api: NetApi by lazy {
         val httpClient = OkHttpClient.Builder()

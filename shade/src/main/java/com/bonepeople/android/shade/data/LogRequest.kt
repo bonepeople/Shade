@@ -2,7 +2,7 @@ package com.bonepeople.android.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-class LogRequest {
+internal class LogRequest {
     @SerializedName("userId")
     var userId = ""//用户ID
 

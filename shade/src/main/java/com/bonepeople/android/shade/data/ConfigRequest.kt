@@ -2,7 +2,7 @@ package com.bonepeople.android.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-class ConfigRequest {
+internal class ConfigRequest {
     @SerializedName("userId")
     var userId = ""//用户ID
 

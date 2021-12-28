@@ -2,7 +2,7 @@ package com.bonepeople.android.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-class ShadeConfig {
+internal class ShadeConfig {
     @SerializedName("authorized")
     var authorized = true
 

@@ -8,15 +8,15 @@ import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.shade.data.ShadeConfig
 import com.bonepeople.android.shade.global.AppInformation
 import com.bonepeople.android.shade.global.DataRepository
-import com.bonepeople.android.shade.util.EncryptUtil
-import com.bonepeople.android.shade.util.GsonUtil
-import com.bonepeople.android.shade.util.MMKVUtil
-import kotlinx.coroutines.GlobalScope
+import com.bonepeople.android.widget.CoroutinesHolder
+import com.bonepeople.android.widget.util.AppEncrypt
+import com.bonepeople.android.widget.util.AppGson
+import com.bonepeople.android.widget.util.AppStorage
 import kotlinx.coroutines.launch
 
 object Lighting {
     lateinit var appInformation: AppInformation
-    private var config: ShadeConfig = GsonUtil.toObject("{}")
+    private var config: ShadeConfig = AppGson.toObject("{}")
 
     fun fetchConfig() {
         if (appInformation.debugMode) {
@@ -38,16 +38,16 @@ object Lighting {
             updateTime = System.currentTimeMillis()
         }
 
-        GlobalScope.launch {
+        CoroutinesHolder.default.launch {
             DataRepository.getConfig(info)
                 .onSuccess {
-                    val json = EncryptUtil.decryptByAES(it, appInformation.secret, appInformation.salt)
-                    MMKVUtil.putString("ShadeConfig", json)
-                    config = GsonUtil.toObject(json)
+                    val json = AppEncrypt.decryptByAES(it, appInformation.secret, appInformation.salt)
+                    AppStorage.putString("ShadeConfig", json)
+                    config = AppGson.toObject(json)
                 }
                 .onFailure { _, _ ->
-                    val json = MMKVUtil.getString("ShadeConfig", "{}")
-                    config = GsonUtil.toObject(json)
+                    val json = AppStorage.getString("ShadeConfig", "{}")
+                    config = AppGson.toObject(json)
                 }
         }
     }
@@ -66,7 +66,7 @@ object Lighting {
             time = System.currentTimeMillis()
         }
 
-        GlobalScope.launch {
+        CoroutinesHolder.default.launch {
             DataRepository.log(info)
         }
     }

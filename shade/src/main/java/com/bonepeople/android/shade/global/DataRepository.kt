@@ -4,8 +4,8 @@ import com.bonepeople.android.shade.Lighting
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.data.HttpResponse
 import com.bonepeople.android.shade.data.LogRequest
-import com.bonepeople.android.shade.util.EncryptUtil
-import com.bonepeople.android.shade.util.GsonUtil
+import com.bonepeople.android.widget.util.AppEncrypt
+import com.bonepeople.android.widget.util.AppGson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -44,8 +44,8 @@ object DataRepository {
     }
 
     private fun generateBody(data: Any? = null): RequestBody {
-        val json = GsonUtil.toJson(data)
-        val encrypt = EncryptUtil.encryptByAES(json, Lighting.appInformation.secret, Lighting.appInformation.salt)
+        val json = AppGson.toJson(data)
+        val encrypt = AppEncrypt.encryptByAES(json, Lighting.appInformation.secret, Lighting.appInformation.salt)
         return encrypt.toRequestBody("application/json".toMediaTypeOrNull())
     }
 

@@ -2,9 +2,9 @@ package com.bonepeople.android.shade.simple
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.bonepeople.android.shade.Lighting
 import com.bonepeople.android.shade.simple.databinding.ActivityMainBinding
+import com.bonepeople.android.widget.util.AppLog
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,12 +16,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun config() {
-        Log.e("ShadeTag", "config")
+        AppLog.debug("config")
         Lighting.fetchConfig()
     }
 
     private fun save() {
-        Log.e("ShadeTag", "save")
+        AppLog.debug("save")
         Lighting.save(1, 1, "test", "123")
     }
 }

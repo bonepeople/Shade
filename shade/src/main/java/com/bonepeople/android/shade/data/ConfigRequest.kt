@@ -19,7 +19,7 @@ internal class ConfigRequest {
     var deviceManufacturer = ""//手机品牌
 
     @SerializedName("versionCode")
-    var versionCode = 0//app版本号
+    var versionCode = 0L//app版本号
 
     @SerializedName("versionName")
     var versionName = ""//app版本名称

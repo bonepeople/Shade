@@ -4,7 +4,7 @@ import android.os.Build
 import android.provider.Settings
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.data.LogRequest
-import com.bonepeople.android.shade.data.ShadeConfig
+import com.bonepeople.android.shade.data.Environment
 import com.bonepeople.android.shade.global.AppInformation
 import com.bonepeople.android.shade.global.DataRepository
 import com.bonepeople.android.widget.ApplicationHolder
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 object Lighting {
     lateinit var appInformation: AppInformation
-    private var config: ShadeConfig = AppGson.toObject("{}")
+    private var config: Environment = AppGson.toObject("{}")
 
     fun fetchConfig() {
         if (appInformation.debugMode) {

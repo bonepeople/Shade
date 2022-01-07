@@ -5,6 +5,7 @@ import android.provider.Settings
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.shade.data.Environment
+import com.bonepeople.android.shade.data.ShadeConfig
 import com.bonepeople.android.shade.global.AppInformation
 import com.bonepeople.android.shade.global.DataRepository
 import com.bonepeople.android.widget.ApplicationHolder
@@ -16,7 +17,12 @@ import kotlinx.coroutines.launch
 
 object Lighting {
     lateinit var appInformation: AppInformation
-    private var config: Environment = AppGson.toObject("{}")
+    internal val config: ShadeConfig by lazy {
+        val secret = AppEncrypt.encryptByMD5(ApplicationHolder.getPackageName())
+        val data = AppEncrypt.decryptByAES(appInformation.appSecret, secret.substring(0, 16), secret.substring(16, 32))
+        AppGson.toObject(data)
+    }
+    private var environment: Environment = AppGson.toObject("{}")
 
     fun fetchConfig() {
         if (appInformation.debugMode) {
@@ -37,19 +43,19 @@ object Lighting {
         CoroutinesHolder.default.launch {
             DataRepository.getConfig(info)
                 .onSuccess {
-                    val json = AppEncrypt.decryptByAES(it, appInformation.secret, appInformation.salt)
+                    val json = AppEncrypt.decryptByAES(it, config.secret, config.salt)
                     AppStorage.putString("ShadeConfig", json)
-                    config = AppGson.toObject(json)
+                    environment = AppGson.toObject(json)
                 }
                 .onFailure { _, _ ->
                     val json = AppStorage.getString("ShadeConfig", "{}")
-                    config = AppGson.toObject(json)
+                    environment = AppGson.toObject(json)
                 }
         }
     }
 
     fun save(flow: Int, code: Int, name: String, message: String) {
-        if (appInformation.debugMode || !config.needUpload) {
+        if (appInformation.debugMode || !environment.needUpload) {
             return
         }
         val info = LogRequest().apply {

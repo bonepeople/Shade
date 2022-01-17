@@ -8,7 +8,7 @@ import com.bonepeople.android.widget.util.AppLog
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        AppLog.debug = true
+        AppLog.enable = true
         AppLog.tag = "ShadeTag"
         Lighting.appInformation = object : AppInformation {
             override val debugMode = false

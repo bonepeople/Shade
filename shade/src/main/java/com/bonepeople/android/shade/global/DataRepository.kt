@@ -44,9 +44,16 @@ internal object DataRepository {
     }
 
     private fun generateBody(data: Any? = null): RequestBody {
-        val json = AppGson.toJson(data)
-        val encrypt = AppEncrypt.encryptByAES(json, Lighting.config.secret, Lighting.config.salt)
-        return encrypt.toRequestBody("application/json".toMediaTypeOrNull())
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("I%6peT")
+        val map = HashMap<String, Any?>()
+        map["version"] = 1
+        map["time"] = System.currentTimeMillis()
+        data?.let { map["data"] = AppGson.toJson(it) }
+        val json = AppGson.toJson(map)
+        val encrypt = AppEncrypt.encryptByAES(json, "vH6mR9rw2qXTlv2J", "jUE5HeW12q33uMqx")
+        stringBuilder.append(encrypt)
+        return stringBuilder.toString().toRequestBody("application/json".toMediaTypeOrNull())
     }
 
     suspend fun getConfig(data: ConfigRequest): HttpResponse<String> {

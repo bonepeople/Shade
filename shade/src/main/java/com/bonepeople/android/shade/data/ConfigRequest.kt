@@ -18,6 +18,12 @@ internal class ConfigRequest {
     @SerializedName("deviceManufacturer")
     var deviceManufacturer = ""//手机品牌
 
+    @SerializedName("packageName")
+    var packageName = ""
+
+    @SerializedName("signature")
+    var signature = ""//APP签名的MD5信息
+
     @SerializedName("versionCode")
     var versionCode = 0L//app版本号
 

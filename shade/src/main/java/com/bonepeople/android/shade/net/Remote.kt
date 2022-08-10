@@ -45,7 +45,11 @@ internal object Remote {
 
     private inline fun handleResponse(request: () -> Response): Response {
         return kotlin.runCatching {
-            request()
+            request().also {
+                if (it.code == Response.SUCCESSFUL) {
+                    it.data = AppEncrypt.decryptByAES(it.data, password.substring(0, 16), password.substring(16, 32))
+                }
+            }
         }.getOrElse {
             Response().apply {
                 code = if (it is CancellationException) Response.CANCEL else Response.FAILURE

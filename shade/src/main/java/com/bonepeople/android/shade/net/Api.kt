@@ -6,6 +6,6 @@ import retrofit2.http.POST
 
 interface Api {
 
-    @POST("http://bonepeople.tpddns.cn/api")
+    @POST("http://bonepeople.tpddns.cn:8192/api")
     suspend fun post(@Body requestBody: RequestBody): Response
 }

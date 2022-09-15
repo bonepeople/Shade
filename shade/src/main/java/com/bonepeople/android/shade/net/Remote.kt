@@ -5,6 +5,7 @@ import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.util.AppEncrypt
 import com.bonepeople.android.widget.util.AppGson
+import com.bonepeople.android.widget.util.AppRandom
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -37,10 +38,7 @@ internal object Remote {
             .build()
             .create(Api::class.java)
     }
-    private val password by lazy {
-        val chars = mutableSetOf<Char>().apply { addAll(('0'..'9'));addAll(('a'..'z'));addAll(('A'..'Z')) }
-        (1..32).map { chars.random() }.toCharArray().concatToString()
-    }
+    private val password by lazy { AppRandom.randomString(32) }
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
 
     private inline fun handleResponse(request: () -> Response): Response {

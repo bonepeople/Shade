@@ -9,8 +9,8 @@ internal class LogRequest {
     @SerializedName("androidId")
     var androidId = ""//系统ID
 
-    @SerializedName("flow")
-    var flow = 0//流程ID
+    @SerializedName("type")
+    var type = ""//流程ID
 
     @SerializedName("code")
     var code = 0//事件代码

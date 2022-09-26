@@ -6,6 +6,7 @@ import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.util.AppEncrypt
 import com.bonepeople.android.widget.util.AppGson
 import com.bonepeople.android.widget.util.AppRandom
+import com.bonepeople.android.widget.util.AppStorage
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -69,10 +70,12 @@ internal object Remote {
     }
 
     suspend fun register(data: ConfigRequest) = handleResponse {
-        api.post(generateBody("shade.register", 1, data))
+        val app = AppStorage.getString("APP_NAME")
+        api.post(generateBody("shade.register.$app", 1, data))
     }
 
     suspend fun log(data: LogRequest) = handleResponse {
-        api.post(generateBody("shade.log", 1, data))
+        val app = AppStorage.getString("APP_NAME")
+        api.post(generateBody("shade.log.$app", 1, data))
     }
 }

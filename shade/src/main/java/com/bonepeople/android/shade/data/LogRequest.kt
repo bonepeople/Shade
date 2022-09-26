@@ -10,7 +10,7 @@ internal class LogRequest {
     var androidId = ""//系统ID
 
     @SerializedName("type")
-    var type = ""//流程ID
+    var type = ""//日志类型
 
     @SerializedName("code")
     var code = 0//事件代码

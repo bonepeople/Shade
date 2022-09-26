@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.startup.Initializer
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
+import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.shade.net.Remote
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
@@ -49,6 +50,19 @@ object Protector {
                     }
                 }
         }
+    }
+
+    suspend fun save(type: String, code: Int, name: String, message: String) {
+        val info = LogRequest().apply {
+            userId = AppStorage.getString("USER_ID")
+            androidId = AppSystem.androidId
+            this.type = type
+            this.code = code
+            this.name = name
+            this.message = message
+            time = System.currentTimeMillis()
+        }
+        Remote.log(info)
     }
 
     class StartUp : Initializer<Protector> {

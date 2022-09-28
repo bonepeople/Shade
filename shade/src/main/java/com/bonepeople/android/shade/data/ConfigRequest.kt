@@ -3,9 +3,6 @@ package com.bonepeople.android.shade.data
 import com.google.gson.annotations.SerializedName
 
 internal class ConfigRequest {
-    @SerializedName("userId")
-    var userId = ""//用户ID
-
     @SerializedName("androidId")
     var androidId = ""//系统ID
 

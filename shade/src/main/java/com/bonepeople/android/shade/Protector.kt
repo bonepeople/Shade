@@ -25,7 +25,6 @@ object Protector {
             delay(time * 1000)
             if (AppStorage.getBoolean(key)) return@launch
             val info = ConfigRequest().apply {
-                userId = AppStorage.getString("USER_ID")
                 androidId = AppSystem.androidId
                 systemVersion = Build.VERSION.SDK_INT
                 deviceModel = Build.MODEL

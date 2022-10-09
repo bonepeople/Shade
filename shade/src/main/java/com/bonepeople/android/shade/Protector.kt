@@ -53,7 +53,7 @@ object Protector {
 
     suspend fun save(type: String, code: Int, name: String, message: String) {
         val info = LogRequest().apply {
-            userId = AppStorage.getString("USER_ID")
+            userId = AppStorage.getString("com.bonepeople.android.key.USER_ID")
             androidId = AppSystem.androidId
             this.type = type
             this.code = code

@@ -70,12 +70,12 @@ internal object Remote {
     }
 
     suspend fun register(data: ConfigRequest) = handleResponse {
-        val app = AppStorage.getString("APP_NAME")
+        val app = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
         api.post(generateBody("shade.register.$app", 1, data))
     }
 
     suspend fun log(data: LogRequest) = handleResponse {
-        val app = AppStorage.getString("APP_NAME")
+        val app = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
         api.post(generateBody("shade.log.$app", 1, data))
     }
 }

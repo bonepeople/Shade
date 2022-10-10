@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.startup.Initializer
+import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
+import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.data.LogRequest
@@ -16,10 +18,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object Protector {
+    private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
+    private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private val key = AppEncrypt.decryptByAES("t5wcyRTXrevx/j6cnH9/seczw8ADzaTGIPIGcO/JZQE=", "N6H95wiH4UoP4N6c", "N6H95wiH4UoP4N6c")
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
+        LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT) {
+            CoroutinesHolder.default.launch {
+                when (it.action) {
+                    USER_LOGIN -> save("shade.user", 1, "login", "")
+                    USER_LOGOUT -> save("shade.user", 2, "logout", "")
+                }
+            }
+        }
         CoroutinesHolder.default.launch {
             val time = AppRandom.randomInt(2..30).toLong()
             delay(time * 1000)
@@ -71,7 +83,7 @@ object Protector {
         }
 
         override fun dependencies(): List<Class<out Initializer<*>>> {
-            return listOf(ApplicationHolder.StartUp::class.java)
+            return listOf(ApplicationHolder.StartUp::class.java, LocalBroadcastUtil.AppInitializer::class.java)
         }
     }
 }

@@ -17,6 +17,13 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
+    private val appName by lazy {
+        var name = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
+        if (name.isEmpty()) {
+            name = ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.instance.packageManager).toString()
+        }
+        name
+    }
     private const val publicKey = """
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOQ2bW3rWdTuKXtc6yEzHNYKWcngICDj
     FvCZ4Slzym5SApnz4GOiyXKCAsuEy+gNK3VJioR2wTA6MLgXW+FdgzGOT+pgkRb0htJcrlTGer1K
@@ -63,19 +70,17 @@ internal object Remote {
         map["version"] = version
         map["debug"] = ApplicationHolder.debug
         map["password"] = password
-        map["time"] = System.currentTimeMillis()
-        data?.let { map["data"] = AppGson.toJson(it) }
+        map["requestTime"] = System.currentTimeMillis()
+        data?.let { map["requestData"] = AppGson.toJson(it) }
         val encrypt = AppEncrypt.encryptByRSA(AppGson.toJson(map), encryptKey)
         return encrypt.toRequestBody("text/plain".toMediaTypeOrNull())
     }
 
     suspend fun register(data: ConfigRequest) = handleResponse {
-        val app = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
-        api.post(generateBody("shade.register.$app", 1, data))
+        api.post(generateBody("shade.register.$appName", 1, data))
     }
 
     suspend fun log(data: LogRequest) = handleResponse {
-        val app = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
-        api.post(generateBody("shade.log.$app", 1, data))
+        api.post(generateBody("shade.log.$appName", 1, data))
     }
 }

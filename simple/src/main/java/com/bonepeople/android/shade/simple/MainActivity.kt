@@ -24,11 +24,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun save() {
         CoroutinesHolder.default.launch {
-            Protector.save("shade.simple.test", 1, "test", "测试save函数")
+            Protector.c5("shade.simple.test", 1, "test", "测试save函数")
         }
     }
 
     private fun generate() {
-        AppToast.show("当前版本不需要生成配置信息")
+        Protector.protect {
+            AppToast.show("当前版本不需要生成配置信息")
+        }
     }
 }

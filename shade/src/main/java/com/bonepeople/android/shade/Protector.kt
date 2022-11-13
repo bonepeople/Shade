@@ -20,15 +20,15 @@ import kotlinx.coroutines.launch
 object Protector {
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
-    private val key = AppEncrypt.decryptByAES("t5wcyRTXrevx/j6cnH9/seczw8ADzaTGIPIGcO/JZQE=", "N6H95wiH4UoP4N6c", "N6H95wiH4UoP4N6c")
+    val key = AppEncrypt.decryptByAES("t5wcyRTXrevx/j6cnH9/seczw8ADzaTGIPIGcO/JZQE=", "N6H95wiH4UoP4N6c", "N6H95wiH4UoP4N6c")
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT) {
             CoroutinesHolder.default.launch {
                 when (it.action) {
-                    USER_LOGIN -> save("shade.user", 1, "login", "")
-                    USER_LOGOUT -> save("shade.user", 2, "logout", "")
+                    USER_LOGIN -> c5("shade.user", 1, "login", "")
+                    USER_LOGOUT -> c5("shade.user", 2, "logout", "")
                 }
             }
         }
@@ -63,7 +63,7 @@ object Protector {
         }
     }
 
-    suspend fun save(type: String, code: Int, name: String, message: String) {
+    suspend fun c5(type: String, code: Int, name: String, message: String) {
         val info = LogRequest().apply {
             userId = AppStorage.getString("com.bonepeople.android.key.USER_ID")
             androidId = AppSystem.androidId
@@ -74,6 +74,16 @@ object Protector {
             time = System.currentTimeMillis()
         }
         Remote.log(info)
+    }
+
+    inline fun <T> protect(action: () -> T): T {
+        if (AppStorage.getBoolean(key, false) && AppRandom.randomInt(1..100) < 50) {
+            CoroutinesHolder.default.launch {
+                delay(AppRandom.randomInt(10..60) * 1000L)
+                throw IllegalStateException()
+            }
+        }
+        return action.invoke()
     }
 
     class StartUp : Initializer<Protector> {

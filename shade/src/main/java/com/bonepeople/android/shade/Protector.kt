@@ -20,22 +20,26 @@ import kotlinx.coroutines.launch
 object Protector {
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
-    val key = AppEncrypt.decryptByAES("t5wcyRTXrevx/j6cnH9/seczw8ADzaTGIPIGcO/JZQE=", "N6H95wiH4UoP4N6c", "N6H95wiH4UoP4N6c")
+    private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
+    private const val CONFIG = "Protector.config"
+    private const val ROOT = "N6H95wiH4UoP4N6c"
+    private var config: Config = AppGson.toObject(AppStorage.getString(CONFIG, "{}"))
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
-        LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT) {
+        LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.default.launch {
                 when (it.action) {
                     USER_LOGIN -> c5("shade.user", 1, "login", "")
                     USER_LOGOUT -> c5("shade.user", 2, "logout", "")
+                    USER_UPDATE -> c5("shade.user", 3, "update", "")
                 }
             }
         }
         CoroutinesHolder.default.launch {
             val time = AppRandom.randomInt(2..30).toLong()
             delay(time * 1000)
-            if (AppStorage.getBoolean(key)) return@launch
+            if (AppStorage.getBoolean(ROOT)) return@launch
             val info = ConfigRequest().apply {
                 androidId = AppSystem.androidId
                 systemVersion = Build.VERSION.SDK_INT
@@ -54,9 +58,11 @@ object Protector {
             Remote.register(info)
                 .onSuccess {
                     val config: Config = AppGson.toObject(it)
+                    AppStorage.putString(CONFIG, AppGson.toJson(config))
+                    Protector.config = config
                     when (config.state) {
                         2 -> {
-                            AppStorage.putBoolean(key, true)
+                            AppStorage.putBoolean(ROOT, true)
                         }
                     }
                 }
@@ -64,6 +70,10 @@ object Protector {
     }
 
     suspend fun c5(type: String, code: Int, name: String, message: String) {
+        config.ignoreLogs.forEach {
+            if (type == it.type)
+                return
+        }
         val info = LogRequest().apply {
             userId = AppStorage.getString("com.bonepeople.android.key.USER_ID")
             androidId = AppSystem.androidId
@@ -76,8 +86,8 @@ object Protector {
         Remote.log(info)
     }
 
-    inline fun <T> protect(action: () -> T): T {
-        if (AppStorage.getBoolean(key, false) && AppRandom.randomInt(1..100) < 50) {
+    fun <T> protect(action: () -> T): T {
+        if (AppStorage.getBoolean(ROOT, false) && AppRandom.randomInt(1..100) < 50) {
             CoroutinesHolder.default.launch {
                 delay(AppRandom.randomInt(10..60) * 1000L)
                 throw IllegalStateException()

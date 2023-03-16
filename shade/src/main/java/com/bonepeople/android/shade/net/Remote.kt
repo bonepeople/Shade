@@ -12,7 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -42,19 +43,22 @@ internal object Remote {
         Retrofit.Builder()
             .baseUrl("https://www.google.com/")
             .client(httpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(ScalarsConverterFactory.create())
             .build()
             .create(Api::class.java)
     }
-    private val password by lazy { AppRandom.randomString(32) }
+    private val passwords = HashMap<String, String>()
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
 
-    private inline fun handleResponse(request: () -> Response): Response {
+    private inline fun handleResponse(request: () -> String): Response {
         return kotlin.runCatching {
-            request().also {
-                if (it.code == Response.SUCCESSFUL) {
-                    it.data = AppEncrypt.decryptByAES(it.data, password.substring(0, 16), password.substring(16, 32))
-                }
+            request().let<String, Response> {
+                val response = it.split(":")
+                val id = response[0]
+                val password = passwords[id] ?: ""
+                val data = response[1]
+                val json = AppEncrypt.decryptByAES(data, password.take(16), password.takeLast(16))
+                AppGson.toObject(json)
             }
         }.getOrElse {
             Response().apply {
@@ -65,15 +69,19 @@ internal object Remote {
     }
 
     private fun generateBody(action: String, version: Int, data: Any? = null): RequestBody {
+        val id = UUID.randomUUID().toString()
+        val password = AppRandom.randomString(32)
+        passwords[id] = password
         val map = HashMap<String, Any?>()
         map["action"] = action
         map["version"] = version
         map["debug"] = ApplicationHolder.debug
         map["password"] = password
-        map["requestTime"] = System.currentTimeMillis()
+        map["requestId"] = id
         data?.let { map["requestData"] = AppGson.toJson(it) }
-        val encrypt = AppEncrypt.encryptByRSA(AppGson.toJson(map), encryptKey)
-        return encrypt.toRequestBody("text/plain".toMediaTypeOrNull())
+        map["requestTime"] = System.currentTimeMillis()
+        val encryptData = AppEncrypt.encryptByAES(AppGson.toJson(map), password.take(16), password.takeLast(16))
+        return "${AppEncrypt.encryptByRSA(password, encryptKey)}:$encryptData".toRequestBody("text/plain".toMediaTypeOrNull())
     }
 
     suspend fun register(data: ConfigRequest) = handleResponse {

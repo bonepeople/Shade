@@ -12,17 +12,18 @@ class Response {
     @SerializedName("data")
     var data: String = ""
 
-    fun onSuccess(action: (value: String) -> Unit) = apply {
+    suspend fun onSuccess(action: suspend (value: String) -> Unit) = apply {
         kotlin.runCatching {
             if (code == SUCCESSFUL) {
                 action(data)
             }
         }.onFailure {
-            throw it
+            code = FAILURE
+            msg = it.message.toString()
         }
     }
 
-    fun onFailure(action: (code: Int, msg: String) -> Unit) = apply {
+    suspend fun onFailure(action: suspend (code: Int, msg: String) -> Unit) = apply {
         if (code == CANCEL) return this
         kotlin.runCatching {
             if (code != SUCCESSFUL) {

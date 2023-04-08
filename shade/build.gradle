@@ -38,13 +38,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     api 'com.github.bonepeople:AndroidWidget:1.5.1'
 
-    // retrofit https://square.github.io/retrofit/
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-
-    //okhttp https://square.github.io/okhttp/
-    //noinspection GradleDependency
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    //Ktor https://ktor.io/docs/welcome.html
+    implementation("io.ktor:ktor-client-android:2.2.4")
 
     //AppStartup https://developer.android.google.cn/topic/libraries/app-startup?hl=zh-cn
     implementation("androidx.startup:startup-runtime:1.1.1")

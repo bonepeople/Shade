@@ -11,7 +11,6 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
-import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
@@ -31,7 +30,6 @@ internal object Remote {
     nONMoQIDAQAB
     """
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
-    private val passwords = HashMap<String, String>()
     private val client: HttpClient by lazy {
         HttpClient(Android) {
             engine {
@@ -44,22 +42,18 @@ internal object Remote {
 
     private suspend fun requestApi(action: String, version: Int, data: Any? = null): Response {
         return kotlin.runCatching {
+            val password = AppRandom.randomString(32)
             client.post("http://bonepeople.tpddns.cn:8192/light") {
-                val id = UUID.randomUUID().toString()
-                val password = AppRandom.randomString(32)
-                passwords[id] = password
                 val map = HashMap<String, Any?>()
                 map["action"] = action
                 map["version"] = version
                 map["debug"] = ApplicationHolder.debug
                 map["password"] = password
-                map["requestId"] = id
                 data?.let { map["requestData"] = AppGson.toJson(it) }
                 map["requestTime"] = System.currentTimeMillis()
                 val encryptData = AppEncrypt.encryptByAES(AppGson.toJson(map), password.take(16), password.takeLast(16))
                 setBody("${AppEncrypt.encryptByRSA(password, encryptKey)}:$encryptData")
             }.body<String>().split(":").let<List<String>, Response> { response ->
-                val password = passwords[response[0]] ?: ""
                 val json = AppEncrypt.decryptByAES(response[1], password.take(16), password.takeLast(16))
                 AppGson.toObject(json)
             }

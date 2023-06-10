@@ -17,7 +17,7 @@ internal object Remote {
     private val appName by lazy {
         var name = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
         if (name.isEmpty()) {
-            name = ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.instance.packageManager).toString()
+            name = ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
         }
         name
     }
@@ -43,7 +43,7 @@ internal object Remote {
     private suspend fun requestApi(action: String, version: Int, data: Any? = null): Response {
         return kotlin.runCatching {
             val password = AppRandom.randomString(32)
-            client.post("http://bonepeople.tpddns.cn:8192/light") {
+            client.post("http://bonepeople.tpddns.cn:8192/star") {
                 val map = HashMap<String, Any?>()
                 map["action"] = action
                 map["version"] = version

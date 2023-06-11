@@ -8,4 +8,7 @@ internal class Config {
 
     @SerializedName("ignoreLogs")
     var ignoreLogs = ArrayList<LogRequest>()
+
+    @SerializedName("offlineTimes")
+    var offlineTimes = 40
 }

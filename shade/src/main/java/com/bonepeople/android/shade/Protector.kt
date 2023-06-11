@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.startup.Initializer
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
@@ -22,7 +23,6 @@ object Protector {
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
     private const val CONFIG = "Protector.config"
-    private const val ROOT = "N6H95wiH4UoP4N6c"
     private var config: Config = AppGson.toObject(AppStorage.getString(CONFIG, "{}"))
 
     @SuppressLint("PackageManagerGetSignatures")
@@ -39,7 +39,7 @@ object Protector {
         CoroutinesHolder.default.launch {
             val time = AppRandom.randomInt(2..30).toLong()
             delay(time * 1000)
-            if (AppStorage.getBoolean(ROOT)) return@launch
+            if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
                 androidId = AppSystem.androidId
                 systemVersion = Build.VERSION.SDK_INT
@@ -57,14 +57,15 @@ object Protector {
             }
             Remote.register(info)
                 .onSuccess {
+                    AppStorage.putString(CONFIG, it)
                     val config: Config = AppGson.toObject(it)
-                    AppStorage.putString(CONFIG, AppGson.toJson(config))
                     Protector.config = config
-                    when (config.state) {
-                        2 -> {
-                            AppStorage.putBoolean(ROOT, true)
-                        }
-                    }
+                }
+                .onFailure { _, _ ->
+                    config.offlineTimes--
+                    if (config.offlineTimes < 0)
+                        config.state = 4
+                    AppStorage.putString(CONFIG, AppGson.toJson(config))
                 }
         }
     }
@@ -87,13 +88,39 @@ object Protector {
     }
 
     fun <T> protect(action: () -> T): T {
-        if (AppStorage.getBoolean(ROOT, false) && AppRandom.randomInt(1..100) < 50) {
-            CoroutinesHolder.default.launch {
-                delay(AppRandom.randomInt(10..60) * 1000L)
-                throw IllegalStateException()
+        check()
+        return action.invoke()
+    }
+
+    private fun check() {
+        CoroutinesHolder.default.launch {
+            when (config.state) {
+                0, 1 -> { //1-正常
+                }
+                2 -> { //2-警告
+                    if (AppRandom.randomInt(1..100) < 30) {
+                        delay(AppRandom.randomInt(20..60) * 1000L)
+                        throw IllegalStateException()
+                    }
+                }
+                3 -> { //3-威慑
+                    if (AppRandom.randomInt(1..100) < 70) {
+                        AppToast.show("当前APP未获得官方授权，可能存在未知问题")
+                        delay(AppRandom.randomInt(20..60) * 1000L)
+                        throw IllegalStateException()
+                    }
+                }
+                4 -> { //4-禁用
+                    delay(AppRandom.randomInt(10..40) * 1000L)
+                    throw IllegalStateException()
+                }
+                else -> { //5-终止
+                    AppToast.show("当前APP为非法程序，请停止使用", Toast.LENGTH_LONG)
+                    delay(AppRandom.randomInt(10..20) * 1000L)
+                    throw IllegalStateException()
+                }
             }
         }
-        return action.invoke()
     }
 
     class StartUp : Initializer<Protector> {

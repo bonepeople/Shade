@@ -1,5 +1,6 @@
 package com.bonepeople.android.shade.net
 
+import com.bonepeople.android.shade.EarthTime
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.widget.ApplicationHolder
@@ -50,7 +51,7 @@ internal object Remote {
                 map["debug"] = ApplicationHolder.debug
                 map["password"] = password
                 data?.let { map["requestData"] = AppGson.toJson(it) }
-                map["requestTime"] = System.currentTimeMillis()
+                map["requestTime"] = EarthTime.now()
                 val encryptData = AppEncrypt.encryptByAES(AppGson.toJson(map), password.take(16), password.takeLast(16))
                 setBody("${AppEncrypt.encryptByRSA(password, encryptKey)}:$encryptData")
             }.body<String>().split(":").let<List<String>, Response> { response ->

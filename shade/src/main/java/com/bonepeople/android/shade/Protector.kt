@@ -53,7 +53,7 @@ object Protector {
                 versionCode = ApplicationHolder.getVersionCode()
                 versionName = ApplicationHolder.getVersionName()
                 installTime = ApplicationHolder.packageInfo.firstInstallTime
-                updateTime = System.currentTimeMillis()
+                updateTime = EarthTime.now()
             }
             Remote.register(info)
                 .onSuccess {
@@ -82,7 +82,7 @@ object Protector {
             this.code = code
             this.name = name
             this.message = message
-            time = System.currentTimeMillis()
+            time = EarthTime.now()
         }
         Remote.log(info)
     }

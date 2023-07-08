@@ -48,7 +48,7 @@ object Protector {
                 packageName = ApplicationHolder.getPackageName()
                 val signatures = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
                 if (!signatures.isNullOrEmpty()) {
-                    signature = AppEncrypt.encryptByMD5(signatures[0].toByteArray().inputStream())
+                    signature = AppMessageDigest.md5(signatures[0].toByteArray().inputStream())
                 }
                 versionCode = ApplicationHolder.getVersionCode()
                 versionName = ApplicationHolder.getVersionName()

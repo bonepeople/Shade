@@ -19,7 +19,7 @@
                 android:id="@+id/button_config"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="发送config请求" />
+                android:text="发送register请求" />
 
             <Button
                 android:id="@+id/button_save"

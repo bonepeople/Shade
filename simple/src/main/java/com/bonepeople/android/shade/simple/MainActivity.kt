@@ -6,6 +6,7 @@ import com.bonepeople.android.shade.Protector
 import com.bonepeople.android.shade.simple.databinding.ActivityMainBinding
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.AppToast
+import com.bonepeople.android.widget.util.AppView.singleClick
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -13,9 +14,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val views = ActivityMainBinding.inflate(layoutInflater)
         setContentView(views.root)
-        views.buttonConfig.setOnClickListener { config() }
-        views.buttonSave.setOnClickListener { save() }
-        views.buttonGenerate.setOnClickListener { generate() }
+        views.buttonConfig.singleClick { config() }
+        views.buttonSave.singleClick { save() }
+        views.buttonGenerate.singleClick { generate() }
     }
 
     private fun config() {

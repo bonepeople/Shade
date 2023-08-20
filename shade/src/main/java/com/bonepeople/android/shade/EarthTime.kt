@@ -3,7 +3,6 @@ package com.bonepeople.android.shade
 import android.os.SystemClock
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.AppStorage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.net.DatagramPacket
@@ -26,7 +25,7 @@ object EarthTime {
     }
 
     private fun syncTime() {
-        CoroutinesHolder.default.launch(Dispatchers.IO) {
+        CoroutinesHolder.io.launch {
             val current = SystemClock.elapsedRealtime()
             val lastTime = AppStorage.getLong(TIME_LAST, 0)
             val elapsed = current - lastTime

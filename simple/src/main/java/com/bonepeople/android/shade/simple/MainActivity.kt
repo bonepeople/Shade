@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun save() {
-        CoroutinesHolder.default.launch {
+        CoroutinesHolder.io.launch {
             Protector.c5("shade.simple.test", 1, "test", "测试save函数")
         }
     }

@@ -28,7 +28,7 @@ object Protector {
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
-            CoroutinesHolder.default.launch {
+            CoroutinesHolder.io.launch {
                 when (it.action) {
                     USER_LOGIN -> c5("shade.user", 1, "login", "")
                     USER_LOGOUT -> c5("shade.user", 2, "logout", "")

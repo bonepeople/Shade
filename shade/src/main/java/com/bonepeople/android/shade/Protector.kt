@@ -105,7 +105,7 @@ object Protector {
                 }
                 3 -> { //3-威慑
                     if (AppRandom.randomInt(1..100) < 70) {
-                        AppToast.show("当前APP未获得官方授权，可能存在未知问题")
+                        AppToast.show("The current APP has not been officially authorized, and there may be unknown problems")
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         throw IllegalStateException()
                     }
@@ -115,7 +115,7 @@ object Protector {
                     throw IllegalStateException()
                 }
                 else -> { //5-终止
-                    AppToast.show("当前APP为非法程序，请停止使用", Toast.LENGTH_LONG)
+                    AppToast.show("The current APP is an illegal program, please stop using it", Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
                     throw IllegalStateException()
                 }

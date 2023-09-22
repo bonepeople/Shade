@@ -10,11 +10,13 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.absoluteValue
 
 object EarthTime {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12小时
     private const val TIME_OFFSET = "com.bonepeople.android.shade.EarthTime.offset" //本地时间与标准时间的偏移量
     private const val TIME_LAST = "com.bonepeople.android.shade.EarthTime.lastTime" //上一次更新时间的时间戳
+    private const val TIME_LOCAL = "com.bonepeople.android.shade.EarthTime.localTime" //本地时间
     private var sync = false
 
     fun now(): Long {
@@ -26,10 +28,10 @@ object EarthTime {
 
     private fun syncTime() {
         CoroutinesHolder.io.launch {
-            val current = SystemClock.elapsedRealtime()
-            val lastTime = AppStorage.getLong(TIME_LAST, 0)
-            val elapsed = current - lastTime
-            if (elapsed < 0 || elapsed > UPDATE_TIME) {
+            val elapsed1 = SystemClock.elapsedRealtime() - AppStorage.getLong(TIME_LAST, 0)
+            val elapsed2 = System.currentTimeMillis() - AppStorage.getLong(TIME_LOCAL, 0)
+            val gap = (elapsed1 - elapsed2).absoluteValue
+            if (elapsed1 < 0 || elapsed1 > UPDATE_TIME || gap > 1000) {
                 if (sync) return@launch
                 sync = true
                 coroutineScope {
@@ -72,6 +74,7 @@ object EarthTime {
             val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
             val offset = timeInMillis - System.currentTimeMillis()
+            AppStorage.putLong(TIME_LOCAL, System.currentTimeMillis())
             AppStorage.putLong(TIME_LAST, SystemClock.elapsedRealtime())
             AppStorage.putLong(TIME_OFFSET, offset)
         }

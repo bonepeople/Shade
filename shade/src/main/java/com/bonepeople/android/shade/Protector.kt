@@ -2,6 +2,7 @@ package com.bonepeople.android.shade
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -37,6 +38,7 @@ object Protector {
             }
         }
         CoroutinesHolder.default.launch {
+            EarthTime.now()
             val time = AppRandom.randomInt(2..30).toLong()
             delay(time * 1000)
             if (config.state >= 5) return@launch
@@ -97,12 +99,14 @@ object Protector {
             when (config.state) {
                 0, 1 -> { //1-正常
                 }
+
                 2 -> { //2-警告
                     if (AppRandom.randomInt(1..100) < 30) {
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         throw IllegalStateException()
                     }
                 }
+
                 3 -> { //3-威慑
                     if (AppRandom.randomInt(1..100) < 70) {
                         AppToast.show("The current APP has not been officially authorized, and there may be unknown problems")
@@ -110,10 +114,12 @@ object Protector {
                         throw IllegalStateException()
                     }
                 }
+
                 4 -> { //4-禁用
                     delay(AppRandom.randomInt(10..40) * 1000L)
                     throw IllegalStateException()
                 }
+
                 else -> { //5-终止
                     AppToast.show("The current APP is an illegal program, please stop using it", Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
@@ -125,6 +131,7 @@ object Protector {
 
     class StartUp : Initializer<Protector> {
         override fun create(context: Context): Protector {
+            context.registerReceiver(TimeChangeReceiver(), IntentFilter("android.intent.action.TIME_SET"))
             register()
             return Protector
         }

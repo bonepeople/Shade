@@ -2,6 +2,7 @@ package com.bonepeople.android.shade.simple
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.bonepeople.android.shade.Lighting
 import com.bonepeople.android.shade.Protector
 import com.bonepeople.android.shade.simple.databinding.ActivityMainBinding
 import com.bonepeople.android.widget.CoroutinesHolder
@@ -25,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun save() {
         CoroutinesHolder.io.launch {
-            Protector.c5("shade.simple.test", 1, "test", "测试save函数")
+            Lighting.c5("shade.simple.test", 1, "test", "测试save函数")
         }
     }
 

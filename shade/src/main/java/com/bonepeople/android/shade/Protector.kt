@@ -11,7 +11,6 @@ import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
-import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.shade.net.Remote
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
@@ -19,6 +18,7 @@ import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Suppress("UNUSED")
 object Protector {
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
@@ -31,9 +31,9 @@ object Protector {
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
-                    USER_LOGIN -> c5("shade.user", 1, "login", "")
-                    USER_LOGOUT -> c5("shade.user", 2, "logout", "")
-                    USER_UPDATE -> c5("shade.user", 3, "update", "")
+                    USER_LOGIN -> Lighting.c5("shade.user", 1, "login", "")
+                    USER_LOGOUT -> Lighting.c5("shade.user", 2, "logout", "")
+                    USER_UPDATE -> Lighting.c5("shade.user", 3, "update", "")
                 }
             }
         }
@@ -72,21 +72,12 @@ object Protector {
         }
     }
 
-    suspend fun c5(type: String, code: Int, name: String, message: String) {
+    fun skipLog(type: String): Boolean {
         config.ignoreLogs.forEach {
             if (type == it.type)
-                return
+                return true
         }
-        val info = LogRequest().apply {
-            userId = AppStorage.getString("com.bonepeople.android.key.USER_ID")
-            androidId = AppSystem.androidId
-            this.type = type
-            this.code = code
-            this.name = name
-            this.message = message
-            time = EarthTime.now()
-        }
-        Remote.log(info)
+        return false
     }
 
     fun <T> protect(action: () -> T): T {

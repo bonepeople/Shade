@@ -12,11 +12,15 @@ import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.net.Remote
+import com.bonepeople.android.shade.strings.AppStringEn
+import com.bonepeople.android.shade.strings.AppStringZhCN
+import com.bonepeople.android.shade.strings.StringResource
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Suppress("UNUSED")
 object Protector {
@@ -100,7 +104,7 @@ object Protector {
 
                 3 -> { //3-威慑
                     if (AppRandom.randomInt(1..100) < 70) {
-                        AppToast.show("The current APP has not been officially authorized, and there may be unknown problems")
+                        AppToast.show(StringResource.getAppString().unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         throw IllegalStateException()
                     }
@@ -112,7 +116,7 @@ object Protector {
                 }
 
                 else -> { //5-终止
-                    AppToast.show("The current APP is an illegal program, please stop using it", Toast.LENGTH_LONG)
+                    AppToast.show(StringResource.getAppString().illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
                     throw IllegalStateException()
                 }
@@ -122,6 +126,8 @@ object Protector {
 
     class StartUp : Initializer<Protector> {
         override fun create(context: Context): Protector {
+            StringResource.registerAppString(Locale.US, AppStringEn())
+            StringResource.registerAppString(Locale.SIMPLIFIED_CHINESE, AppStringZhCN())
             context.registerReceiver(TimeChangeReceiver(), IntentFilter("android.intent.action.TIME_SET"))
             register()
             return Protector

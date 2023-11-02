@@ -7,7 +7,6 @@ import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.util.AppEncrypt
 import com.bonepeople.android.widget.util.AppGson
 import com.bonepeople.android.widget.util.AppRandom
-import com.bonepeople.android.widget.util.AppStorage
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -16,11 +15,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
     private val appName by lazy {
-        var name = AppStorage.getString("com.bonepeople.android.key.APP_NAME")
-        if (name.isEmpty()) {
-            name = ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
-        }
-        name
+        ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
     }
     private const val publicKey = """
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOQ2bW3rWdTuKXtc6yEzHNYKWcngICDj

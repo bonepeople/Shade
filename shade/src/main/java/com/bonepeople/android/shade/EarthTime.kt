@@ -2,7 +2,6 @@ package com.bonepeople.android.shade
 
 import android.os.SystemClock
 import com.bonepeople.android.widget.CoroutinesHolder
-import com.bonepeople.android.widget.util.AppStorage
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.net.DatagramPacket
@@ -20,7 +19,7 @@ object EarthTime {
     private var sync = false
 
     fun now(): Long {
-        val offset = AppStorage.getLong(TIME_OFFSET, 0)
+        val offset = CacheBox.getLong(TIME_OFFSET, 0)
         val systemTime = System.currentTimeMillis()
         syncTime()
         return systemTime + offset
@@ -28,8 +27,8 @@ object EarthTime {
 
     private fun syncTime() {
         CoroutinesHolder.io.launch {
-            val elapsed1 = SystemClock.elapsedRealtime() - AppStorage.getLong(TIME_LAST, 0)
-            val elapsed2 = System.currentTimeMillis() - AppStorage.getLong(TIME_LOCAL, 0)
+            val elapsed1 = SystemClock.elapsedRealtime() - CacheBox.getLong(TIME_LAST, 0)
+            val elapsed2 = System.currentTimeMillis() - CacheBox.getLong(TIME_LOCAL, 0)
             val gap = (elapsed1 - elapsed2).absoluteValue
             if (elapsed1 < 0 || elapsed1 > UPDATE_TIME || gap > 1000) {
                 if (sync) return@launch
@@ -74,9 +73,9 @@ object EarthTime {
             val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
             val offset = timeInMillis - System.currentTimeMillis()
-            AppStorage.putLong(TIME_LOCAL, System.currentTimeMillis())
-            AppStorage.putLong(TIME_LAST, SystemClock.elapsedRealtime())
-            AppStorage.putLong(TIME_OFFSET, offset)
+            CacheBox.putLong(TIME_LOCAL, System.currentTimeMillis())
+            CacheBox.putLong(TIME_LAST, SystemClock.elapsedRealtime())
+            CacheBox.putLong(TIME_OFFSET, offset)
         }
     }
 }

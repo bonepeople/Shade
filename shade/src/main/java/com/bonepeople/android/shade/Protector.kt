@@ -28,7 +28,7 @@ object Protector {
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
     private const val CONFIG = "Protector.config"
-    private var config: Config = AppGson.toObject(AppStorage.getString(CONFIG, "{}"))
+    private var config: Config = AppGson.toObject(CacheBox.getString(CONFIG, "{}"))
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
@@ -43,7 +43,7 @@ object Protector {
         }
         CoroutinesHolder.default.launch {
             EarthTime.now()
-            val time = AppRandom.randomInt(2..30).toLong()
+            val time = AppRandom.randomInt(10..40).toLong()
             delay(time * 1000)
             if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
@@ -63,7 +63,7 @@ object Protector {
             }
             Remote.register(info)
                 .onSuccess {
-                    AppStorage.putString(CONFIG, it)
+                    CacheBox.putString(CONFIG, it)
                     val config: Config = AppGson.toObject(it)
                     Protector.config = config
                 }
@@ -71,7 +71,7 @@ object Protector {
                     config.offlineTimes--
                     if (config.offlineTimes < 0)
                         config.state = 4
-                    AppStorage.putString(CONFIG, AppGson.toJson(config))
+                    CacheBox.putString(CONFIG, AppGson.toJson(config))
                 }
         }
     }

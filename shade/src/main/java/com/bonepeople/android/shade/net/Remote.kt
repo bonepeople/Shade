@@ -6,6 +6,7 @@ import com.bonepeople.android.shade.data.LogRequest
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.util.AppEncrypt
 import com.bonepeople.android.widget.util.AppGson
+import com.bonepeople.android.widget.util.AppMessageDigest
 import com.bonepeople.android.widget.util.AppRandom
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -39,7 +40,7 @@ internal object Remote {
     private suspend fun requestApi(action: String, version: Int, data: Any? = null): Response {
         return kotlin.runCatching {
             val password = AppRandom.randomString(32)
-            client.post("http://bonepeople.tpddns.cn:8192/star") {
+            client.post("http://bonepeople.tpddns.cn:8192/open") {
                 val map = HashMap<String, Any?>()
                 map["action"] = action
                 map["version"] = version
@@ -48,7 +49,11 @@ internal object Remote {
                 data?.let { map["requestData"] = AppGson.toJson(it) }
                 map["requestTime"] = EarthTime.now()
                 val encryptData = AppEncrypt.encryptByAES(AppGson.toJson(map), password.take(16), password.takeLast(16))
-                setBody("${AppEncrypt.encryptByRSA(password, encryptKey)}:$encryptData")
+                val header = HashMap<String, Any?>()
+                header["password"] = password
+                header["md5"] = AppMessageDigest.md5(encryptData)
+                val encryptHeader = AppEncrypt.encryptByRSA(AppGson.toJson(header), encryptKey)
+                setBody("$encryptHeader:$encryptData")
             }.body<String>().split(":").let<List<String>, Response> { response ->
                 val json = AppEncrypt.decryptByAES(response[1], password.take(16), password.takeLast(16))
                 AppGson.toObject(json)

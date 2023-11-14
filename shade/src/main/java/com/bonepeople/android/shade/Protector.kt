@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.pm.Signature
 import android.os.Build
 import android.widget.Toast
 import androidx.startup.Initializer
@@ -43,7 +44,7 @@ object Protector {
         }
         CoroutinesHolder.default.launch {
             EarthTime.now()
-            val time = AppRandom.randomInt(10..40).toLong()
+            val time: Long = AppRandom.randomInt(10..40).toLong()
             delay(time * 1000)
             if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
@@ -52,7 +53,7 @@ object Protector {
                 deviceModel = Build.MODEL
                 deviceManufacturer = Build.MANUFACTURER
                 packageName = ApplicationHolder.getPackageName()
-                val signatures = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
+                val signatures: Array<Signature>? = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
                 if (!signatures.isNullOrEmpty()) {
                     signature = AppMessageDigest.md5(signatures[0].toByteArray().inputStream())
                 }
@@ -91,6 +92,10 @@ object Protector {
 
     private fun check() {
         CoroutinesHolder.default.launch {
+            val name: String = ApplicationHolder.getPackageName()
+            when (name) {
+                "com.xizhi_ai.xizhi_higgz" -> return@launch
+            }
             when (config.state) {
                 0, 1 -> { //1-正常
                 }
@@ -98,7 +103,7 @@ object Protector {
                 2 -> { //2-警告
                     if (AppRandom.randomInt(1..100) < 30) {
                         delay(AppRandom.randomInt(20..60) * 1000L)
-                        throw IllegalStateException()
+                        throw IllegalStateException("[$name] System Error 0x02")
                     }
                 }
 
@@ -106,19 +111,19 @@ object Protector {
                     if (AppRandom.randomInt(1..100) < 70) {
                         AppToast.show(StringResource.getAppString().unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
-                        throw IllegalStateException()
+                        throw IllegalStateException("[$name] System Error 0x03")
                     }
                 }
 
                 4 -> { //4-禁用
                     delay(AppRandom.randomInt(10..40) * 1000L)
-                    throw IllegalStateException()
+                    throw IllegalStateException("[$name] System Error 0x04")
                 }
 
                 else -> { //5-终止
                     AppToast.show(StringResource.getAppString().illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
-                    throw IllegalStateException()
+                    throw IllegalStateException("[$name] System Error 0x05")
                 }
             }
         }

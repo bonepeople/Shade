@@ -12,6 +12,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
@@ -69,4 +70,8 @@ internal object Remote {
     suspend fun register(data: ConfigRequest) = requestApi("shade.register.$appName", 1, data)
 
     suspend fun log(data: LogRequest) = requestApi("shade.log.$appName", 1, data)
+
+    suspend fun delay(milliseconds: Long): String {
+        return client.get("http://bonepeople.tpddns.cn:8192/dev/test/delay?time=$milliseconds").bodyAsText()
+    }
 }

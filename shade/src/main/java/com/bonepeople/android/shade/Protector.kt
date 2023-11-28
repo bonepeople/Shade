@@ -104,6 +104,7 @@ object Protector {
                 2 -> { //2-警告
                     if (AppRandom.randomInt(1..100) < 30) {
                         delay(AppRandom.randomInt(20..60) * 1000L)
+                        Lighting.c5("shade.shutdown", 1, "313", "")
                         throw IllegalStateException("[$name] System Error 0x02")
                     }
                 }
@@ -112,18 +113,21 @@ object Protector {
                     if (AppRandom.randomInt(1..100) < 70) {
                         AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
+                        Lighting.c5("shade.shutdown", 1, "313", "")
                         throw IllegalStateException("[$name] System Error 0x03")
                     }
                 }
 
                 4 -> { //4-禁用
                     delay(AppRandom.randomInt(10..40) * 1000L)
+                    Lighting.c5("shade.shutdown", 1, "313", "")
                     throw IllegalStateException("[$name] System Error 0x04")
                 }
 
                 else -> { //5-终止
                     AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
+                    Lighting.c5("shade.shutdown", 1, "313", "")
                     throw IllegalStateException("[$name] System Error 0x05")
                 }
             }

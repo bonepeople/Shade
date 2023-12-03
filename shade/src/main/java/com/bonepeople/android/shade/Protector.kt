@@ -13,11 +13,12 @@ import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
 import com.bonepeople.android.shade.net.Remote
-import com.bonepeople.android.shade.strings.AppStringEn
-import com.bonepeople.android.shade.strings.AppStringZhCN
-import com.bonepeople.android.shade.strings.StringResource
+import com.bonepeople.android.shade.strings.ShadeString
+import com.bonepeople.android.shade.strings.ShadeStringEnUS
+import com.bonepeople.android.shade.strings.ShadeStringZhCN
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
+import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -109,7 +110,7 @@ object Protector {
 
                 3 -> { //3-威慑
                     if (AppRandom.randomInt(1..100) < 70) {
-                        AppToast.show(StringResource.getAppString().unAuthorized)
+                        AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         throw IllegalStateException("[$name] System Error 0x03")
                     }
@@ -121,7 +122,7 @@ object Protector {
                 }
 
                 else -> { //5-终止
-                    AppToast.show(StringResource.getAppString().illegal, Toast.LENGTH_LONG)
+                    AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
                     throw IllegalStateException("[$name] System Error 0x05")
                 }
@@ -131,8 +132,8 @@ object Protector {
 
     class StartUp : Initializer<Protector> {
         override fun create(context: Context): Protector {
-            StringResource.registerAppString(Locale.US, AppStringEn())
-            StringResource.registerAppString(Locale.SIMPLIFIED_CHINESE, AppStringZhCN())
+            StringResourceManager.register(ShadeStringEnUS(), Locale.US)
+            StringResourceManager.register(ShadeStringZhCN(), Locale.SIMPLIFIED_CHINESE)
             context.registerReceiver(TimeChangeReceiver(), IntentFilter("android.intent.action.TIME_SET"))
             register()
             return Protector

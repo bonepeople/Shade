@@ -18,6 +18,24 @@ internal class ConfigRequest {
     @SerializedName("deviceManufacturer")
     var deviceManufacturer = ""//手机品牌
 
+    @SerializedName("cpuHardware")
+    var cpuHardware = ""
+
+    @SerializedName("cpuCores")
+    var cpuCores = 0
+
+    @SerializedName("cpuMaxFreq")
+    var cpuMaxFreq = 0L
+
+    @SerializedName("cpuAbis")
+    var cpuAbis = ""
+
+    @SerializedName("totalMemory")
+    var totalMemory = 0L
+
+    @SerializedName("availableMemory")
+    var availableMemory = 0L
+
     @SerializedName("packageName")
     var packageName = ""
 

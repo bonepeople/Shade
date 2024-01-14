@@ -1,12 +1,14 @@
 package com.bonepeople.android.shade
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.os.Build
 import android.widget.Toast
+import androidx.core.content.getSystemService
 import androidx.startup.Initializer
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
@@ -22,6 +24,7 @@ import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Locale
 
 @Suppress("UNUSED")
@@ -57,6 +60,17 @@ object Protector {
                 systemVersion = Build.VERSION.SDK_INT
                 deviceModel = Build.MODEL
                 deviceManufacturer = Build.MANUFACTURER
+                cpuHardware = Build.HARDWARE
+                cpuCores = Runtime.getRuntime().availableProcessors()
+                cpuMaxFreq = getCpuMaxFreq()
+                cpuAbis = AppGson.toJson(Build.SUPPORTED_ABIS)
+                ApplicationHolder.app.getSystemService<ActivityManager>()?.let { manager ->
+                    ActivityManager.MemoryInfo().let { memoryInfo ->
+                        manager.getMemoryInfo(memoryInfo)
+                        totalMemory = memoryInfo.totalMem
+                        availableMemory = memoryInfo.availMem
+                    }
+                }
                 packageName = ApplicationHolder.getPackageName()
                 val signatures: Array<Signature>? = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
                 if (!signatures.isNullOrEmpty()) {
@@ -93,6 +107,12 @@ object Protector {
     fun <T> protect(action: () -> T): T {
         check()
         return action.invoke()
+    }
+
+    private fun getCpuMaxFreq(): Long {
+        return kotlin.runCatching {
+            File("sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq").readLines().firstOrNull()?.toLong() ?: 0
+        }.getOrDefault(0)
     }
 
     private fun check() {

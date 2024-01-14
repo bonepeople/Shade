@@ -31,6 +31,9 @@ object Protector {
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
     private const val CONFIG = "Protector.config"
     private var config: Config = AppGson.toObject(CacheBox.getString(CONFIG, "{}"))
+    internal val appName by lazy {
+        ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
+    }
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
@@ -49,6 +52,7 @@ object Protector {
             delay(time * 1000)
             if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
+                appName = Protector.appName
                 androidId = AppSystem.androidId
                 systemVersion = Build.VERSION.SDK_INT
                 deviceModel = Build.MODEL

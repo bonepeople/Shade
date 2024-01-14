@@ -15,9 +15,6 @@ import io.ktor.client.request.*
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
-    private val appName by lazy {
-        ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
-    }
     private const val publicKey = """
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOQ2bW3rWdTuKXtc6yEzHNYKWcngICDj
         FvCZ4Slzym5SApnz4GOiyXKCAsuEy+gNK3VJioR2wTA6MLgXW+FdgzGOT+pgkRb0htJcrlTGer1K
@@ -66,7 +63,7 @@ internal object Remote {
         }
     }
 
-    suspend fun register(data: ConfigRequest) = requestApi("shade.register.$appName", 1, data)
+    suspend fun register(data: ConfigRequest) = requestApi("shade.register.${data.appName}", 1, data)
 
-    suspend fun log(data: LogRequest) = requestApi("shade.log.$appName", 1, data)
+    suspend fun log(data: LogRequest) = requestApi("shade.log.${data.appName}", 1, data)
 }

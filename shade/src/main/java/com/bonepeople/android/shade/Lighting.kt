@@ -8,6 +8,7 @@ object Lighting {
     suspend fun c5(type: String, code: Int, name: String, message: String) {
         if (Protector.skipLog(type)) return
         val info = LogRequest().apply {
+            appName = Protector.appName
             androidId = AppSystem.androidId
             this.type = type
             this.code = code

@@ -3,6 +3,9 @@ package com.bonepeople.android.shade.data
 import com.google.gson.annotations.SerializedName
 
 internal class LogRequest {
+    @SerializedName("appName")
+    var appName = ""
+
     @SerializedName("userId")
     var userId = ""//用户ID
 

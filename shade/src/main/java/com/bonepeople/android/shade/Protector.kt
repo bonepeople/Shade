@@ -38,6 +38,63 @@ object Protector {
         ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
     }
 
+    fun <T> protect(action: () -> T): T {
+        check()
+        return action.invoke()
+    }
+
+    internal fun skipLog(type: String): Boolean {
+        config.ignoreLogs.forEach {
+            if (type == it.type)
+                return true
+        }
+        return false
+    }
+
+    private fun check() {
+        CoroutinesHolder.default.launch {
+            val name: String = ApplicationHolder.getPackageName()
+            when (name) {
+                "com.xizhi_ai.xizhi_higgz" -> return@launch
+                "com.finshell.fin" -> return@launch
+            }
+            when (config.state) {
+                0, 1 -> { //1-正常
+                }
+
+                2 -> { //2-警告
+                    if (AppRandom.randomInt(1..100) < 30) {
+                        delay(AppRandom.randomInt(20..60) * 1000L)
+                        Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
+                        throw IllegalStateException("[$name] System Error 0x02")
+                    }
+                }
+
+                3 -> { //3-威慑
+                    if (AppRandom.randomInt(1..100) < 70) {
+                        AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
+                        delay(AppRandom.randomInt(20..60) * 1000L)
+                        Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
+                        throw IllegalStateException("[$name] System Error 0x03")
+                    }
+                }
+
+                4 -> { //4-禁用
+                    delay(AppRandom.randomInt(10..40) * 1000L)
+                    Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
+                    throw IllegalStateException("[$name] System Error 0x04")
+                }
+
+                else -> { //5-终止
+                    AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
+                    delay(AppRandom.randomInt(10..20) * 1000L)
+                    Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
+                    throw IllegalStateException("[$name] System Error 0x05")
+                }
+            }
+        }
+    }
+
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
@@ -51,8 +108,7 @@ object Protector {
         }
         CoroutinesHolder.default.launch {
             EarthTime.now()
-            val time: Long = AppRandom.randomInt(10..40).toLong()
-            delay(time * 1000)
+            delay(AppRandom.randomInt(15000..40000).toLong())
             if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
                 appName = Protector.appName
@@ -96,62 +152,10 @@ object Protector {
         }
     }
 
-    fun skipLog(type: String): Boolean {
-        config.ignoreLogs.forEach {
-            if (type == it.type)
-                return true
-        }
-        return false
-    }
-
-    fun <T> protect(action: () -> T): T {
-        check()
-        return action.invoke()
-    }
-
     private fun getCpuMaxFreq(): Long {
         return kotlin.runCatching {
             File("sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq").readLines().firstOrNull()?.toLong() ?: 0
         }.getOrDefault(0)
-    }
-
-    private fun check() {
-        CoroutinesHolder.default.launch {
-            val name: String = ApplicationHolder.getPackageName()
-            when (name) {
-                "com.xizhi_ai.xizhi_higgz" -> return@launch
-            }
-            when (config.state) {
-                0, 1 -> { //1-正常
-                }
-
-                2 -> { //2-警告
-                    if (AppRandom.randomInt(1..100) < 30) {
-                        delay(AppRandom.randomInt(20..60) * 1000L)
-                        throw IllegalStateException("[$name] System Error 0x02")
-                    }
-                }
-
-                3 -> { //3-威慑
-                    if (AppRandom.randomInt(1..100) < 70) {
-                        AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
-                        delay(AppRandom.randomInt(20..60) * 1000L)
-                        throw IllegalStateException("[$name] System Error 0x03")
-                    }
-                }
-
-                4 -> { //4-禁用
-                    delay(AppRandom.randomInt(10..40) * 1000L)
-                    throw IllegalStateException("[$name] System Error 0x04")
-                }
-
-                else -> { //5-终止
-                    AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
-                    delay(AppRandom.randomInt(10..20) * 1000L)
-                    throw IllegalStateException("[$name] System Error 0x05")
-                }
-            }
-        }
     }
 
     class StartUp : Initializer<Protector> {

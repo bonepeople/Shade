@@ -11,6 +11,7 @@ import com.bonepeople.android.widget.util.AppRandom
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.*
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -24,11 +25,15 @@ internal object Remote {
         nONMoQIDAQAB
     """
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
+    private val host by lazy { AppEncrypt.decryptByAES("aSnDWoISi7G995xCpEzVOP57p1d3ZFrH3yUULbWsZT5P1hYLoTJyH5iwNJ1tyWDK", publicKey, "") }
     private val client: HttpClient by lazy {
         HttpClient(Android) {
             engine {
                 connectTimeout = 10_000
                 socketTimeout = 10_000
+            }
+            defaultRequest {
+                url(Remote.host)
             }
             expectSuccess = true
         }
@@ -37,7 +42,7 @@ internal object Remote {
     private suspend fun requestApi(action: String, version: Int, data: Any? = null): Response {
         return kotlin.runCatching {
             val password = AppRandom.randomString(32)
-            client.post("http://bonepeople.tpddns.cn:8192/open") {
+            client.post("open") {
                 val map = HashMap<String, Any?>()
                 map["action"] = action
                 map["version"] = version

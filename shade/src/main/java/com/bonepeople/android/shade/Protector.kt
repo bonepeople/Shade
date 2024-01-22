@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.Signature
+import android.content.res.Resources
 import android.os.Build
 import android.widget.Toast
 import androidx.core.content.getSystemService
@@ -127,6 +128,9 @@ object Protector {
                         availableMemory = memoryInfo.availMem
                     }
                 }
+                screenWidth = AppSystem.getScreenWidth()
+                screenHeight = AppSystem.getScreenHeight()
+                density = Resources.getSystem().displayMetrics.density
                 packageName = ApplicationHolder.getPackageName()
                 val signatures: Array<Signature>? = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
                 if (!signatures.isNullOrEmpty()) {

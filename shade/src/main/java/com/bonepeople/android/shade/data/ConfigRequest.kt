@@ -30,6 +30,15 @@ internal class ConfigRequest {
     @SerializedName("cpuAbis")
     var cpuAbis = ""
 
+    @SerializedName("screenWidth")
+    var screenWidth = 0
+
+    @SerializedName("screenHeight")
+    var screenHeight = 0
+
+    @SerializedName("density")
+    var density = 0f
+
     @SerializedName("totalMemory")
     var totalMemory = 0L
 

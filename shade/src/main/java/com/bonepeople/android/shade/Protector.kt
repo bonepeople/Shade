@@ -58,6 +58,7 @@ object Protector {
             when (name) {
                 "com.xizhi_ai.xizhi_higgz" -> return@launch
                 "com.finshell.fin" -> return@launch
+                "com.finshell.fin1" -> return@launch
             }
             when (config.state) {
                 0, 1 -> { //1-正常

@@ -7,23 +7,23 @@ internal class LogRequest {
     var appName = ""
 
     @SerializedName("userId")
-    var userId = ""//用户ID
+    var userId = ""
 
     @SerializedName("androidId")
-    var androidId = ""//系统ID
+    var androidId = ""
 
     @SerializedName("type")
-    var type = ""//日志类型
+    var type = ""
 
     @SerializedName("code")
-    var code = 0//事件代码
+    var code = 0
 
     @SerializedName("name")
-    var name = ""//事件名称
+    var name = ""
 
     @SerializedName("message")
-    var message = ""//日志信息
+    var message = ""
 
     @SerializedName("time")
-    var time = 0L//日志时间戳
+    var time = 0L
 }

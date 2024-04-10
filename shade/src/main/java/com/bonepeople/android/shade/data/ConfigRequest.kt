@@ -7,16 +7,16 @@ internal class ConfigRequest {
     var appName = ""
 
     @SerializedName("androidId")
-    var androidId = ""//系统ID
+    var androidId = ""
 
     @SerializedName("systemVersion")
-    var systemVersion = 0//系统版本
+    var systemVersion = 0
 
     @SerializedName("deviceModel")
-    var deviceModel = ""//手机型号
+    var deviceModel = ""
 
     @SerializedName("deviceManufacturer")
-    var deviceManufacturer = ""//手机品牌
+    var deviceManufacturer = ""
 
     @SerializedName("cpuHardware")
     var cpuHardware = ""
@@ -49,17 +49,17 @@ internal class ConfigRequest {
     var packageName = ""
 
     @SerializedName("signature")
-    var signature = ""//APP签名的MD5信息
+    var signature = ""
 
     @SerializedName("versionCode")
-    var versionCode = 0L//app版本号
+    var versionCode = 0L
 
     @SerializedName("versionName")
-    var versionName = ""//app版本名称
+    var versionName = ""
 
     @SerializedName("installTime")
-    var installTime = 0L//安装日期
+    var installTime = 0L
 
     @SerializedName("updateTime")
-    var updateTime = 0L//上报时间
+    var updateTime = 0L
 }

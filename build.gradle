@@ -14,3 +14,11 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+gradle.projectsEvaluated {
+    tasks.withType(Jar) {
+        if (name.endsWith("SourcesJar")) {
+            enabled = false
+        }
+    }
+}

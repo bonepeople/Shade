@@ -53,9 +53,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
 
     // AndroidWidget https://github.com/bonepeople/AndroidWidget
-    api 'com.github.bonepeople:AndroidWidget:1.7.5'
+    api 'com.github.bonepeople:AndroidWidget:canary-SNAPSHOT'
 
-    compileOnly('com.github.bonepeople:AndroidBase:1.7.5') {
+    compileOnly('com.github.bonepeople:AndroidBase:canary-SNAPSHOT') {
         transitive = false
     }
     compileOnly 'com.geyifeng.immersionbar:immersionbar:3.2.2'

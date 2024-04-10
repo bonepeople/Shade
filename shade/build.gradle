@@ -53,7 +53,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
 
     // AndroidWidget https://github.com/bonepeople/AndroidWidget
-    api 'com.github.bonepeople:AndroidWidget:1.7.4'
+    api 'com.github.bonepeople:AndroidWidget:canary-SNAPSHOT'
 
     compileOnly('com.github.bonepeople:AndroidBase:1.7.0') {
         transitive = false

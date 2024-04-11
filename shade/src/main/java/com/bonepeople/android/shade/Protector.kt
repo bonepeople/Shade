@@ -61,10 +61,10 @@ object Protector {
                 "com.finshell.fin1" -> return@launch
             }
             when (config.state) {
-                0, 1 -> { //1-正常
+                0, 1 -> {
                 }
 
-                2 -> { //2-警告
+                2 -> {
                     if (AppRandom.randomInt(1..100) < 30) {
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
@@ -72,7 +72,7 @@ object Protector {
                     }
                 }
 
-                3 -> { //3-威慑
+                3 -> {
                     if (AppRandom.randomInt(1..100) < 70) {
                         AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
@@ -81,13 +81,13 @@ object Protector {
                     }
                 }
 
-                4 -> { //4-禁用
+                4 -> {
                     delay(AppRandom.randomInt(10..40) * 1000L)
                     Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
                     throw IllegalStateException("[$name] System Error 0x04")
                 }
 
-                else -> { //5-终止
+                else -> {
                     AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
                     Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")

@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun save() {
         CoroutinesHolder.io.launch {
-            Lighting.c5("shade.simple.test", 1, "test", "测试save函数")
+            Lighting.c5("shade.simple.test", 1, "test", "test save function")
         }
     }
 }

@@ -12,10 +12,10 @@ import java.nio.ByteOrder
 import kotlin.math.absoluteValue
 
 object EarthTime {
-    private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12小时
-    private const val TIME_OFFSET = "com.bonepeople.android.shade.EarthTime.offset" //本地时间与标准时间的偏移量
-    private const val TIME_LAST = "com.bonepeople.android.shade.EarthTime.lastTime" //上一次更新时间的时间戳
-    private const val TIME_LOCAL = "com.bonepeople.android.shade.EarthTime.localTime" //本地时间
+    private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
+    private const val TIME_OFFSET = "com.bonepeople.android.shade.EarthTime.offset"
+    private const val TIME_LAST = "com.bonepeople.android.shade.EarthTime.lastTime"
+    private const val TIME_LOCAL = "com.bonepeople.android.shade.EarthTime.localTime"
     private var sync = false
 
     fun now(): Long {

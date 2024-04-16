@@ -18,3 +18,6 @@
 -keepclassmembers class * extends com.bonepeople.android.base.viewbinding.ViewBindingRefreshAdapter{
  <init>(...);
 }
+
+#Algorithms used for obfuscation
+-optimizations !class/merging/*

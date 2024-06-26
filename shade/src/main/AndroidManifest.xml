@@ -10,7 +10,7 @@
             android:exported="false"
             tools:node="merge">
             <meta-data
-                android:name="com.bonepeople.android.shade.Protector$StartUp"
+                android:name="androidx.shade.Protector$StartUp"
                 android:value="@string/androidx_startup" />
         </provider>
     </application>

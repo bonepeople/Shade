@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace "com.bonepeople.android.shade"
+    namespace "androidx.shade"
     compileSdk rootProject.androidConfig.compileSdk
     defaultConfig {
         minSdk rootProject.androidConfig.minSdk

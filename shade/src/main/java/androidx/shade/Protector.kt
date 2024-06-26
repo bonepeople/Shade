@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
@@ -10,15 +10,15 @@ import android.content.res.Resources
 import android.os.Build
 import android.widget.Toast
 import androidx.core.content.getSystemService
+import androidx.shade.data.Config
+import androidx.shade.data.ConfigRequest
+import androidx.shade.net.Remote
+import androidx.shade.strings.ShadeString
+import androidx.shade.strings.ShadeStringEnUS
+import androidx.shade.strings.ShadeStringZhCN
 import androidx.startup.Initializer
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
-import com.bonepeople.android.shade.data.Config
-import com.bonepeople.android.shade.data.ConfigRequest
-import com.bonepeople.android.shade.net.Remote
-import com.bonepeople.android.shade.strings.ShadeString
-import com.bonepeople.android.shade.strings.ShadeStringEnUS
-import com.bonepeople.android.shade.strings.ShadeStringZhCN
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.resource.StringResourceManager

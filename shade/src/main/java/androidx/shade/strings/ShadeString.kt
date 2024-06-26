@@ -1,9 +1,9 @@
-package com.bonepeople.android.shade.strings
+package androidx.shade.strings
 
 import com.bonepeople.android.widget.resource.StringTemplate
 
 internal abstract class ShadeString : StringTemplate {
-    override val templateClass: Class<ShadeString> = ShadeString.templateClass
+    override val templateClass: Class<out StringTemplate> = Companion.templateClass
     abstract val unAuthorized: String
     abstract val illegal: String
 

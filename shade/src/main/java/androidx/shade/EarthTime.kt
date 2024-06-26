@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
 import android.os.SystemClock
 import com.bonepeople.android.widget.CoroutinesHolder
@@ -13,9 +13,9 @@ import kotlin.math.absoluteValue
 
 object EarthTime {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
-    private const val TIME_OFFSET = "com.bonepeople.android.shade.EarthTime.offset"
-    private const val TIME_LAST = "com.bonepeople.android.shade.EarthTime.lastTime"
-    private const val TIME_LOCAL = "com.bonepeople.android.shade.EarthTime.localTime"
+    private const val TIME_OFFSET = "androidx.shade.EarthTime.offset"
+    private const val TIME_LAST = "androidx.shade.EarthTime.lastTime"
+    private const val TIME_LOCAL = "androidx.shade.EarthTime.localTime"
     private var sync = false
 
     fun now(): Long {

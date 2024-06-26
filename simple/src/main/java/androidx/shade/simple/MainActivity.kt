@@ -1,9 +1,9 @@
-package com.bonepeople.android.shade.simple
+package androidx.shade.simple
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.bonepeople.android.shade.Lighting
-import com.bonepeople.android.shade.simple.databinding.ActivityMainBinding
+import androidx.appcompat.app.AppCompatActivity
+import androidx.shade.Lighting
+import androidx.shade.simple.databinding.ActivityMainBinding
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.AppView.singleClick
 import kotlinx.coroutines.launch

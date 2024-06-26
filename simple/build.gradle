@@ -4,10 +4,10 @@ plugins {
 }
 
 android {
-    namespace 'com.bonepeople.android.shade.simple'
+    namespace 'androidx.shade.simple'
     compileSdk rootProject.androidConfig.compileSdk
     defaultConfig {
-        applicationId "com.bonepeople.android.shade.simple"
+        applicationId "androidx.shade.simple"
         minSdk rootProject.androidConfig.minSdk
         targetSdk rootProject.androidConfig.targetSdk
         versionCode rootProject.androidConfig.versionCode

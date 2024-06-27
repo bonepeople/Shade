@@ -2,13 +2,11 @@ package androidx.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-internal class Config {
+internal data class Config(
     @SerializedName("state")
-    var state = 0
-
+    var state: Int = 0,
     @SerializedName("ignoreLogs")
-    var ignoreLogs = ArrayList<LogRequest>()
-
+    val ignoreLogs: List<LogRequest> = listOf(),
     @SerializedName("offlineTimes")
-    var offlineTimes = 40
-}
+    var offlineTimes: Int = 40,
+)

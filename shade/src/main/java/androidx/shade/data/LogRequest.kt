@@ -2,28 +2,21 @@ package androidx.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-internal class LogRequest {
+internal data class LogRequest(
     @SerializedName("appName")
-    var appName = ""
-
+    val appName: String = "",
     @SerializedName("userId")
-    var userId = ""
-
+    val userId: String = "",
     @SerializedName("androidId")
-    var androidId = ""
-
+    val androidId: String = "",
     @SerializedName("type")
-    var type = ""
-
+    val type: String = "",
     @SerializedName("code")
-    var code = 0
-
+    val code: Int = 0,
     @SerializedName("name")
-    var name = ""
-
+    val name: String = "",
     @SerializedName("message")
-    var message = ""
-
+    val message: String = "",
     @SerializedName("time")
-    var time = 0L
-}
+    val time: Long = 0L,
+)

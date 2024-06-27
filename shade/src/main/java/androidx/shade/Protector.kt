@@ -112,36 +112,36 @@ object Protector {
             EarthTime.now()
             delay(AppRandom.randomInt(15000..40000).toLong())
             if (config.state >= 5) return@launch
-            val info = ConfigRequest().apply {
-                appName = Protector.appName
-                androidId = AppSystem.androidId
-                systemVersion = Build.VERSION.SDK_INT
-                deviceModel = Build.MODEL
-                deviceManufacturer = Build.MANUFACTURER
-                cpuHardware = Build.HARDWARE
-                cpuCores = Runtime.getRuntime().availableProcessors()
-                cpuMaxFreq = getCpuMaxFreq()
-                cpuAbis = AppGson.toJson(Build.SUPPORTED_ABIS)
-                ApplicationHolder.app.getSystemService<ActivityManager>()?.let { manager ->
-                    ActivityManager.MemoryInfo().let { memoryInfo ->
-                        manager.getMemoryInfo(memoryInfo)
-                        totalMemory = memoryInfo.totalMem
-                        availableMemory = memoryInfo.availMem
-                    }
+
+            val memoryInfo: ActivityManager.MemoryInfo? = ApplicationHolder.app.getSystemService<ActivityManager>()?.let { manager: ActivityManager ->
+                ActivityManager.MemoryInfo().also { info ->
+                    manager.getMemoryInfo(info)
                 }
-                screenWidth = AppSystem.getScreenWidth()
-                screenHeight = AppSystem.getScreenHeight()
-                density = Resources.getSystem().displayMetrics.density
-                packageName = ApplicationHolder.getPackageName()
-                val signatures: Array<Signature>? = ApplicationHolder.app.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
-                if (!signatures.isNullOrEmpty()) {
-                    signature = AppMessageDigest.md5(signatures[0].toByteArray().inputStream())
-                }
-                versionCode = ApplicationHolder.getVersionCode()
-                versionName = ApplicationHolder.getVersionName()
-                installTime = ApplicationHolder.packageInfo.firstInstallTime
-                updateTime = EarthTime.now()
             }
+            val firstSignature: Signature? = ApplicationHolder.app.packageManager.getPackageInfo(ApplicationHolder.getPackageName(), PackageManager.GET_SIGNATURES).signatures?.firstOrNull()
+            val signatureMD5 = firstSignature?.toByteArray()?.let { AppMessageDigest.md5(it.inputStream()) }
+            val info = ConfigRequest(
+                appName = appName,
+                androidId = AppSystem.androidId,
+                systemVersion = Build.VERSION.SDK_INT,
+                deviceModel = Build.MODEL,
+                deviceManufacturer = Build.MANUFACTURER,
+                cpuHardware = Build.HARDWARE,
+                cpuCores = Runtime.getRuntime().availableProcessors(),
+                cpuMaxFreq = getCpuMaxFreq(),
+                cpuAbis = AppGson.toJson(Build.SUPPORTED_ABIS),
+                totalMemory = memoryInfo?.totalMem ?: 0,
+                availableMemory = memoryInfo?.availMem ?: 0,
+                screenWidth = AppSystem.getScreenWidth(),
+                screenHeight = AppSystem.getScreenHeight(),
+                density = Resources.getSystem().displayMetrics.density,
+                packageName = ApplicationHolder.getPackageName(),
+                signature = signatureMD5 ?: "",
+                versionCode = ApplicationHolder.getVersionCode(),
+                versionName = ApplicationHolder.getVersionName(),
+                installTime = ApplicationHolder.packageInfo.firstInstallTime,
+                updateTime = EarthTime.now(),
+            )
             Remote.register(info)
                 .onSuccess {
                     CacheBox.putString(CONFIG, it)

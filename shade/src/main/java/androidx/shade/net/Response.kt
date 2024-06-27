@@ -2,16 +2,14 @@ package androidx.shade.net
 
 import com.google.gson.annotations.SerializedName
 
-class Response {
+data class Response(
     @SerializedName("code")
-    var code: Int = 0
-
+    var code: Int = 0,
     @SerializedName("msg")
-    var msg: String = ""
-
+    var msg: String = "",
     @SerializedName("data")
-    var data: String = ""
-
+    var data: String = "",
+) {
     suspend fun onSuccess(action: suspend (value: String) -> Unit) = apply {
         kotlin.runCatching {
             if (code == SUCCESSFUL) {

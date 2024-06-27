@@ -2,64 +2,45 @@ package androidx.shade.data
 
 import com.google.gson.annotations.SerializedName
 
-internal class ConfigRequest {
+internal data class ConfigRequest(
     @SerializedName("appName")
-    var appName = ""
-
+    val appName: String = "",
     @SerializedName("androidId")
-    var androidId = ""
-
+    val androidId: String = "",
     @SerializedName("systemVersion")
-    var systemVersion = 0
-
+    val systemVersion: Int = 0,
     @SerializedName("deviceModel")
-    var deviceModel = ""
-
+    val deviceModel: String = "",
     @SerializedName("deviceManufacturer")
-    var deviceManufacturer = ""
-
+    val deviceManufacturer: String = "",
     @SerializedName("cpuHardware")
-    var cpuHardware = ""
-
+    val cpuHardware: String = "",
     @SerializedName("cpuCores")
-    var cpuCores = 0
-
+    val cpuCores: Int = 0,
     @SerializedName("cpuMaxFreq")
-    var cpuMaxFreq = 0L
-
+    val cpuMaxFreq: Long = 0L,
     @SerializedName("cpuAbis")
-    var cpuAbis = ""
-
+    val cpuAbis: String = "",
     @SerializedName("screenWidth")
-    var screenWidth = 0
-
+    val screenWidth: Int = 0,
     @SerializedName("screenHeight")
-    var screenHeight = 0
-
+    val screenHeight: Int = 0,
     @SerializedName("density")
-    var density = 0f
-
+    val density: Float = 0f,
     @SerializedName("totalMemory")
-    var totalMemory = 0L
-
+    val totalMemory: Long = 0L,
     @SerializedName("availableMemory")
-    var availableMemory = 0L
-
+    val availableMemory: Long = 0L,
     @SerializedName("packageName")
-    var packageName = ""
-
+    val packageName: String = "",
     @SerializedName("signature")
-    var signature = ""
-
+    val signature: String = "",
     @SerializedName("versionCode")
-    var versionCode = 0L
-
+    val versionCode: Long = 0L,
     @SerializedName("versionName")
-    var versionName = ""
-
+    val versionName: String = "",
     @SerializedName("installTime")
-    var installTime = 0L
-
+    val installTime: Long = 0L,
     @SerializedName("updateTime")
-    var updateTime = 0L
-}
+    val updateTime: Long = 0L,
+)

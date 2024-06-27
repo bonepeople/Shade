@@ -61,10 +61,10 @@ internal object Remote {
                 AppGson.toObject(json)
             }
         }.getOrElse {
-            Response().apply {
-                code = if (it is CancellationException) Response.CANCEL else Response.FAILURE
+            Response(
+                code = if (it is CancellationException) Response.CANCEL else Response.FAILURE,
                 msg = it.message ?: ""
-            }
+            )
         }
     }
 

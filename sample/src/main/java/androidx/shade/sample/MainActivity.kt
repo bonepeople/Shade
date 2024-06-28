@@ -1,9 +1,9 @@
-package androidx.shade.simple
+package androidx.shade.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.shade.Lighting
-import androidx.shade.simple.databinding.ActivityMainBinding
+import androidx.shade.sample.databinding.ActivityMainBinding
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.AppView.singleClick
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun save() {
         CoroutinesHolder.io.launch {
-            Lighting.c5("shade.simple.test", 1, "test", "test save function")
+            Lighting.c5("shade.sample.test", 1, "test", "test save function")
         }
     }
 }

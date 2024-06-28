@@ -4,10 +4,10 @@ plugins {
 }
 
 android {
-    namespace 'androidx.shade.simple'
+    namespace 'androidx.shade.sample'
     compileSdk rootProject.androidConfig.compileSdk
     defaultConfig {
-        applicationId "androidx.shade.simple"
+        applicationId "androidx.shade.sample"
         minSdk rootProject.androidConfig.minSdk
         targetSdk rootProject.androidConfig.targetSdk
         versionCode rootProject.androidConfig.versionCode

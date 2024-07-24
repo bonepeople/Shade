@@ -2,7 +2,7 @@ package com.bonepeople.android.shade.net
 
 import com.google.gson.annotations.SerializedName
 
-class Response {
+internal class Response {
     @SerializedName("code")
     var code: Int = 0
 

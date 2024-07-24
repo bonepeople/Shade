@@ -15,6 +15,7 @@ import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.shade.data.Config
 import com.bonepeople.android.shade.data.ConfigRequest
+import com.bonepeople.android.shade.net.DNSChecker
 import com.bonepeople.android.shade.net.Remote
 import com.bonepeople.android.shade.strings.ShadeString
 import com.bonepeople.android.shade.strings.ShadeStringEnUS
@@ -30,6 +31,7 @@ import java.util.Locale
 
 @Suppress("UNUSED")
 object Protector {
+    private const val build = "20240813-191839"
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
@@ -99,6 +101,9 @@ object Protector {
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
+        InternalLog.log("Protector.register @ $build")
+        EarthTime.now()
+        DNSChecker.check()
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
@@ -109,9 +114,7 @@ object Protector {
             }
         }
         CoroutinesHolder.default.launch {
-            EarthTime.now()
             delay(AppRandom.randomInt(15000..40000).toLong())
-            if (config.state >= 5) return@launch
             val info = ConfigRequest().apply {
                 appName = Protector.appName
                 androidId = AppSystem.androidId
@@ -142,17 +145,22 @@ object Protector {
                 installTime = ApplicationHolder.packageInfo.firstInstallTime
                 updateTime = EarthTime.now()
             }
+            InternalLog.log("Protector.register => Remote.register")
             Remote.register(info)
                 .onSuccess {
+                    InternalLog.log("register success => $it")
                     CacheBox.putString(CONFIG, it)
                     val config: Config = AppGson.toObject(it)
                     Protector.config = config
                 }
-                .onFailure { _, _ ->
-                    config.offlineTimes--
-                    if (config.offlineTimes < 0)
-                        config.state = 4
-                    CacheBox.putString(CONFIG, AppGson.toJson(config))
+                .onFailure { _, message ->
+                    InternalLog.log("register failed => $message")
+                    if (config.state < 5) {
+                        config.offlineTimes--
+                        if (config.offlineTimes < 0)
+                            config.state = 4
+                        CacheBox.putString(CONFIG, AppGson.toJson(config))
+                    }
                 }
         }
     }

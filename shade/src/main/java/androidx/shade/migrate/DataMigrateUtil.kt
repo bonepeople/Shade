@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 
+@Suppress("Unused")
 object DataMigrateUtil {
     private val migrateMutex = Mutex()
 

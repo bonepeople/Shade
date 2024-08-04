@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 
-@Suppress("UNUSED")
+@Suppress("Unused")
 object Protector {
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"

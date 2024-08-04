@@ -1,6 +1,6 @@
 package androidx.lifecycle
 
-@Suppress("unused")
+@Suppress("Unused")
 object ViewModelStorage {
     fun <T> ViewModel.getExtra(key: String): T? = getTag(key)
 

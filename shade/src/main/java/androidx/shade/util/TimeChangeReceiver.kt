@@ -1,10 +1,11 @@
-package androidx.shade
+package androidx.shade.util
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.shade.EarthTime
 
-class TimeChangeReceiver : BroadcastReceiver() {
+internal class TimeChangeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         EarthTime.now()
     }

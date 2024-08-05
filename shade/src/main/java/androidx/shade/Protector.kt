@@ -16,6 +16,9 @@ import androidx.shade.net.Remote
 import androidx.shade.strings.ShadeString
 import androidx.shade.strings.ShadeStringEnUS
 import androidx.shade.strings.ShadeStringZhCN
+import androidx.shade.util.CacheBox
+import androidx.shade.util.InternalLogUtil
+import androidx.shade.util.TimeChangeReceiver
 import androidx.startup.Initializer
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
@@ -99,6 +102,7 @@ object Protector {
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
+        InternalLogUtil.logger.verbose("Shade| Protector.register")
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
@@ -142,13 +146,16 @@ object Protector {
                 installTime = ApplicationHolder.packageInfo.firstInstallTime,
                 updateTime = EarthTime.now(),
             )
+            InternalLogUtil.logger.verbose("Shade| Protector.register => Remote.register")
             Remote.register(info)
                 .onSuccess {
+                    InternalLogUtil.logger.verbose("Shade| register success => $it")
                     CacheBox.putString(CONFIG, it)
                     val config: Config = AppGson.toObject(it)
                     Protector.config = config
                 }
-                .onFailure { _, _ ->
+                .onFailure { _, message ->
+                    InternalLogUtil.logger.verbose("Shade| register failed => $message")
                     config.offlineTimes--
                     if (config.offlineTimes < 0)
                         config.state = 4

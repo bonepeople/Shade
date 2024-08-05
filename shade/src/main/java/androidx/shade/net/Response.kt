@@ -2,7 +2,7 @@ package androidx.shade.net
 
 import com.google.gson.annotations.SerializedName
 
-data class Response(
+internal data class Response(
     @SerializedName("code")
     var code: Int = 0,
     @SerializedName("msg")

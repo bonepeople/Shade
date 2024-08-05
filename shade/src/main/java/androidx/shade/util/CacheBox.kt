@@ -1,4 +1,4 @@
-package androidx.shade
+package androidx.shade.util
 
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder

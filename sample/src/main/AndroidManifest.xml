@@ -7,6 +7,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Shade">
+        <meta-data
+            android:name="ShadeAppLog.enable"
+            android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

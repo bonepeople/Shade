@@ -45,7 +45,7 @@ dependencies {
     api 'com.github.bonepeople:AndroidWidget:1.6.7'
 
     // Ktor https://ktor.io/docs/welcome.html
-    implementation("io.ktor:ktor-client-android:2.2.4")
+    implementation("io.ktor:ktor-client-okhttp:2.2.4")
 
     // AppStartup https://developer.android.google.cn/topic/libraries/app-startup?hl=zh-cn
     implementation("androidx.startup:startup-runtime:1.1.1")

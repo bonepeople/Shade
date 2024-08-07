@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.shade.data.Config
 import androidx.shade.data.ConfigRequest
+import androidx.shade.net.DNSChecker
 import androidx.shade.net.Remote
 import androidx.shade.strings.ShadeString
 import androidx.shade.strings.ShadeStringEnUS
@@ -103,6 +104,8 @@ object Protector {
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         InternalLogUtil.logger.verbose("Shade| Protector.register")
+        EarthTime.now()
+        DNSChecker.check()
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
@@ -113,9 +116,7 @@ object Protector {
             }
         }
         CoroutinesHolder.default.launch {
-            EarthTime.now()
             delay(AppRandom.randomInt(15000..40000).toLong())
-            if (config.state >= 5) return@launch
 
             val memoryInfo: ActivityManager.MemoryInfo? = ApplicationHolder.app.getSystemService<ActivityManager>()?.let { manager: ActivityManager ->
                 ActivityManager.MemoryInfo().also { info ->
@@ -156,10 +157,12 @@ object Protector {
                 }
                 .onFailure { _, message ->
                     InternalLogUtil.logger.verbose("Shade| register failed => $message")
-                    config.offlineTimes--
-                    if (config.offlineTimes < 0)
-                        config.state = 4
-                    CacheBox.putString(CONFIG, AppGson.toJson(config))
+                    if (config.state < 5) {
+                        config.offlineTimes--
+                        if (config.offlineTimes < 0)
+                            config.state = 4
+                        CacheBox.putString(CONFIG, AppGson.toJson(config))
+                    }
                 }
         }
     }

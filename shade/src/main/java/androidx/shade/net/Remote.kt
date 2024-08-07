@@ -10,13 +10,14 @@ import com.bonepeople.android.widget.util.AppMessageDigest
 import com.bonepeople.android.widget.util.AppRandom
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.android.*
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.*
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
-    private const val publicKey = """
+    const val publicKey = """
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOQ2bW3rWdTuKXtc6yEzHNYKWcngICDj
         FvCZ4Slzym5SApnz4GOiyXKCAsuEy+gNK3VJioR2wTA6MLgXW+FdgzGOT+pgkRb0htJcrlTGer1K
         VVYTKG2ds8q7x8/cZbhVanluG9rksPQTnVKDLqlsbfrk1T2ZQUE8BVA2wuN8WsEcOzmMckH4/2Wi
@@ -25,12 +26,15 @@ internal object Remote {
         nONMoQIDAQAB
     """
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
-    private val host by lazy { AppEncrypt.decryptByAES("aSnDWoISi7G995xCpEzVOP57p1d3ZFrH3yUULbWsZT5P1hYLoTJyH5iwNJ1tyWDK", publicKey, "") }
+    private val host by lazy { DNSChecker.getHost() }
     private val client: HttpClient by lazy {
-        HttpClient(Android) {
+        HttpClient(OkHttp) {
             engine {
-                connectTimeout = 10_000
-                socketTimeout = 10_000
+                config {
+                    connectTimeout(10, TimeUnit.SECONDS)
+                    readTimeout(10, TimeUnit.SECONDS)
+                    writeTimeout(10, TimeUnit.SECONDS)
+                }
             }
             defaultRequest {
                 url(Remote.host)

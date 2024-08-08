@@ -38,7 +38,7 @@ object Protector {
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
     private const val CONFIG = "Protector.config"
-    private var config: Config = AppGson.toObject(CacheBox.getString(CONFIG, "{}"))
+    private var config: Config = Config()
     internal val appName by lazy {
         ApplicationHolder.packageInfo.applicationInfo.loadLabel(ApplicationHolder.app.packageManager).toString()
     }
@@ -104,8 +104,6 @@ object Protector {
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         InternalLogUtil.logger.verbose("Shade| Protector.register")
-        EarthTime.now()
-        DNSChecker.check()
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
@@ -116,6 +114,9 @@ object Protector {
             }
         }
         CoroutinesHolder.default.launch {
+            EarthTime.now()
+            config = AppGson.toObject(CacheBox.getString(CONFIG, "{}"))
+            DNSChecker.check()
             delay(AppRandom.randomInt(15000..40000).toLong())
 
             val memoryInfo: ActivityManager.MemoryInfo? = ApplicationHolder.app.getSystemService<ActivityManager>()?.let { manager: ActivityManager ->

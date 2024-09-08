@@ -15,8 +15,6 @@ import androidx.shade.data.ConfigRequest
 import androidx.shade.net.DNSChecker
 import androidx.shade.net.Remote
 import androidx.shade.strings.ShadeString
-import androidx.shade.strings.ShadeStringEnUS
-import androidx.shade.strings.ShadeStringZhCN
 import androidx.shade.util.CacheBox
 import androidx.shade.util.InternalLogUtil
 import androidx.shade.util.TimeChangeReceiver
@@ -30,7 +28,6 @@ import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.Locale
 
 @Suppress("Unused")
 object Protector {
@@ -176,8 +173,6 @@ object Protector {
 
     class StartUp : Initializer<Protector> {
         override fun create(context: Context): Protector {
-            StringResourceManager.register(ShadeStringEnUS(), Locale.US)
-            StringResourceManager.register(ShadeStringZhCN(), Locale.SIMPLIFIED_CHINESE)
             context.registerReceiver(TimeChangeReceiver(), IntentFilter("android.intent.action.TIME_SET"))
             register()
             return Protector

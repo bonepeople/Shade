@@ -62,7 +62,7 @@ internal object DNSChecker {
     fun check() {
         CoroutinesHolder.io.launch {
             if (EarthTime.now() - AppData.create("com.android.shade.host").getLong("lastUpdateTime", 0) < TTL) return@launch
-            InternalLogUtil.logger.verbose("Shade| update host")
+            InternalLogUtil.verbose("update host")
             kotlin.runCatching {
                 val encryptData = client.get(configUrl).bodyAsText()
                 val json = AppEncrypt.decryptByRSA(encryptData, AppEncrypt.decodeRSAPublicKey(Remote.publicKey))
@@ -70,10 +70,10 @@ internal object DNSChecker {
                 val hostUrl = data[ApplicationHolder.getPackageName()] ?: data["default"] ?: defaultHostUrl
                 AppData.create("com.android.shade.host").putLong("lastUpdateTime", EarthTime.now())
                 AppData.create("com.android.shade.host").putString("url", hostUrl)
-                InternalLogUtil.logger.verbose("Shade| update host: $hostUrl")
+                InternalLogUtil.verbose("update host: $hostUrl")
             }.getOrElse {
                 Lighting.c5("shade.host", 1, "getHostError", it.message ?: "unknown")
-                InternalLogUtil.logger.verbose("Shade| update host error: ${it.message}")
+                InternalLogUtil.verbose("update host error: ${it.message}")
             }
         }
     }

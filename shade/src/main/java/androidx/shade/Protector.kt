@@ -100,7 +100,7 @@ object Protector {
 
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
-        InternalLogUtil.logger.verbose("Shade| Protector.register")
+        InternalLogUtil.verbose("Protector.register")
         LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
             CoroutinesHolder.io.launch {
                 when (it.action) {
@@ -145,16 +145,16 @@ object Protector {
                 installTime = ApplicationHolder.packageInfo.firstInstallTime,
                 updateTime = EarthTime.now(),
             )
-            InternalLogUtil.logger.verbose("Shade| Protector.register => Remote.register")
+            InternalLogUtil.verbose("Protector.register => Remote.register")
             Remote.register(info)
                 .onSuccess {
-                    InternalLogUtil.logger.verbose("Shade| register success => $it")
+                    InternalLogUtil.verbose("register success => $it")
                     CacheBox.putString(CONFIG, it)
                     val config: Config = AppGson.toObject(it)
                     Protector.config = config
                 }
                 .onFailure { _, message ->
-                    InternalLogUtil.logger.verbose("Shade| register failed => $message")
+                    InternalLogUtil.verbose("register failed => $message")
                     if (config.state < 5) {
                         config.offlineTimes--
                         if (config.offlineTimes < 0)

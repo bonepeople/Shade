@@ -13,6 +13,9 @@ object DataMigrateUtil {
 
     suspend fun migrate(dataId: String, migrateList: List<DataMigrateInfo>): Int {
         return withContext(Dispatchers.IO) {
+            if (!checkValidName(dataId)) {
+                throw IllegalArgumentException("Invalid name: $dataId")
+            }
             return@withContext migrateMutex.withLock {
                 var currentVersion = getVersion(dataId)
                 if (migrateList.none { it.range.first == currentVersion }) return@withLock currentVersion
@@ -34,6 +37,27 @@ object DataMigrateUtil {
                 return@withLock currentVersion
             }
         }
+    }
+
+    private fun checkValidName(name: String): Boolean {
+        // 1. Check if the name is empty or exceeds the length limit
+        if (name.isBlank() || name.length > 255) {
+            return false
+        }
+        // 2. Check for illegal characters
+        val illegalChars = listOf('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+        if (name.any { it in illegalChars }) {
+            return false
+        }
+        // 3. Check if the name contains invisible characters (e.g., control characters)
+        if (name.any { it.isISOControl() }) {
+            return false
+        }
+        // 4. Check if the name ends with illegal characters (such as "." or " ")
+        if (name.endsWith(".") || name.endsWith(" ")) {
+            return false
+        }
+        return true
     }
 
     //packageName\data\versions\dataId\summary => 1\2\3\4

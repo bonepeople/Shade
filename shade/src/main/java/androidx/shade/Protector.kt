@@ -64,35 +64,27 @@ object Protector {
             when (config.state) {
                 0, 1 -> {
                 }
-
                 2 -> {
                     if (AppRandom.randomInt(1..100) < 30) {
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
-                        throw IllegalStateException("[$name] System Error 0x02")
                     }
                 }
-
                 3 -> {
                     if (AppRandom.randomInt(1..100) < 70) {
                         AppToast.show(StringResourceManager.get(ShadeString.templateClass).unAuthorized)
                         delay(AppRandom.randomInt(20..60) * 1000L)
                         Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
-                        throw IllegalStateException("[$name] System Error 0x03")
                     }
                 }
-
                 4 -> {
                     delay(AppRandom.randomInt(10..40) * 1000L)
                     Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
-                    throw IllegalStateException("[$name] System Error 0x04")
                 }
-
                 else -> {
                     AppToast.show(StringResourceManager.get(ShadeString.templateClass).illegal, Toast.LENGTH_LONG)
                     delay(AppRandom.randomInt(10..20) * 1000L)
                     Lighting.c5("shade.shutdown", 1, "IllegalState", "state = ${config.state}")
-                    throw IllegalStateException("[$name] System Error 0x05")
                 }
             }
         }

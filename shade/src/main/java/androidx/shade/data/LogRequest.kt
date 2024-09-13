@@ -1,8 +1,11 @@
 package androidx.shade.data
 
 import com.google.gson.annotations.SerializedName
+import java.util.UUID
 
 internal data class LogRequest(
+    @SerializedName("id")
+    val id: String = UUID.randomUUID().toString(),
     @SerializedName("appName")
     val appName: String = "",
     @SerializedName("userId")

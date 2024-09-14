@@ -42,7 +42,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
 
     // AndroidWidget https://github.com/bonepeople/AndroidWidget
-    api 'com.github.bonepeople:AndroidWidget:1.6.7'
+    api 'com.github.bonepeople:AndroidWidget:1.7.1'
 
     // Ktor https://ktor.io/docs/welcome.html
     implementation("io.ktor:ktor-client-okhttp:2.2.4")

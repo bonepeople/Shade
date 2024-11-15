@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
 import android.os.SystemClock
 import com.bonepeople.android.widget.CoroutinesHolder

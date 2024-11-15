@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade.strings
+package androidx.shade.strings
 
 internal class ShadeStringEnUS : ShadeString() {
     override val unAuthorized: String = "The current APP has not been officially authorized, and there may be unknown problems"

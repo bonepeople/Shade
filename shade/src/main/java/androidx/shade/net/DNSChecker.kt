@@ -1,8 +1,8 @@
-package com.bonepeople.android.shade.net
+package androidx.shade.net
 
-import com.bonepeople.android.shade.EarthTime
-import com.bonepeople.android.shade.InternalLog
-import com.bonepeople.android.shade.Lighting
+import androidx.shade.EarthTime
+import androidx.shade.InternalLog
+import androidx.shade.Lighting
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.util.AppData

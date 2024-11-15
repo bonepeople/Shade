@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade.strings
+package androidx.shade.strings
 
 import com.bonepeople.android.widget.resource.StringTemplate
 

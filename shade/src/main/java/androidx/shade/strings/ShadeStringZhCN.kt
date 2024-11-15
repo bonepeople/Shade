@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade.strings
+package androidx.shade.strings
 
 internal class ShadeStringZhCN : ShadeString() {
     override val unAuthorized: String = "当前APP未获得官方授权，可能存在未知问题"

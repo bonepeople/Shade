@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade.net
+package androidx.shade.net
 
 import com.google.gson.annotations.SerializedName
 

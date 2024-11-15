@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
 import android.content.BroadcastReceiver
 import android.content.Context

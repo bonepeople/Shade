@@ -1,4 +1,4 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
@@ -10,16 +10,16 @@ import android.content.res.Resources
 import android.os.Build
 import android.widget.Toast
 import androidx.core.content.getSystemService
+import androidx.shade.data.Config
+import androidx.shade.data.ConfigRequest
+import androidx.shade.net.DNSChecker
+import androidx.shade.net.Remote
+import androidx.shade.strings.ShadeString
+import androidx.shade.strings.ShadeStringEnUS
+import androidx.shade.strings.ShadeStringZhCN
 import androidx.startup.Initializer
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
 import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
-import com.bonepeople.android.shade.data.Config
-import com.bonepeople.android.shade.data.ConfigRequest
-import com.bonepeople.android.shade.net.DNSChecker
-import com.bonepeople.android.shade.net.Remote
-import com.bonepeople.android.shade.strings.ShadeString
-import com.bonepeople.android.shade.strings.ShadeStringEnUS
-import com.bonepeople.android.shade.strings.ShadeStringZhCN
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.resource.StringResourceManager
@@ -31,7 +31,7 @@ import java.util.Locale
 
 @Suppress("UNUSED")
 object Protector {
-    private const val build = "20240813-191839"
+    private const val build = "20241115-143245"
     private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
     private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
     private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"

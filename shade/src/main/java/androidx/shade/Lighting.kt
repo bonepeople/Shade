@@ -1,7 +1,7 @@
-package com.bonepeople.android.shade
+package androidx.shade
 
-import com.bonepeople.android.shade.data.LogRequest
-import com.bonepeople.android.shade.net.Remote
+import androidx.shade.data.LogRequest
+import androidx.shade.net.Remote
 import com.bonepeople.android.widget.util.AppSystem
 
 object Lighting {

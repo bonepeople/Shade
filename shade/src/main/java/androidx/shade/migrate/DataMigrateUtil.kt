@@ -9,13 +9,14 @@ import java.io.File
 
 @Suppress("Unused")
 object DataMigrateUtil {
-    private val migrateMutex = Mutex()
+    private val mutexMap: MutableMap<String, Mutex> = mutableMapOf()
 
     suspend fun migrate(dataId: String, migrateList: List<DataMigrateInfo>): Int {
         return withContext(Dispatchers.IO) {
             if (!checkValidName(dataId)) {
                 throw IllegalArgumentException("Invalid name: $dataId")
             }
+            val migrateMutex = synchronized(DataMigrateUtil) { mutexMap.getOrPut(dataId) { Mutex() } }
             return@withContext migrateMutex.withLock {
                 var currentVersion = getVersion(dataId)
                 if (migrateList.none { it.range.first == currentVersion }) return@withLock currentVersion

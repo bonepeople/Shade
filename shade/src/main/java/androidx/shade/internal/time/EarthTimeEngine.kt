@@ -1,6 +1,5 @@
 package androidx.shade.internal.time
 
-import android.os.SystemClock
 import androidx.shade.util.CacheBox
 import androidx.shade.util.InternalLogUtil
 import com.bonepeople.android.widget.CoroutinesHolder
@@ -19,18 +18,19 @@ internal object EarthTimeEngine {
     private const val TIME_LAST = "androidx.shade.EarthTime.lastTime"
     private const val TIME_LOCAL = "androidx.shade.EarthTime.localTime"
     private var sync = false
+    internal var deviceClock: DeviceClock = SystemDeviceClock
 
     fun now(): Long {
         val offset = CacheBox.getLong(TIME_OFFSET, 0)
-        val systemTime = System.currentTimeMillis()
+        val systemTime = deviceClock.currentTimeMillis()
         syncTime()
         return systemTime + offset
     }
 
     private fun syncTime() {
         CoroutinesHolder.io.launch {
-            val elapsed1 = SystemClock.elapsedRealtime() - CacheBox.getLong(TIME_LAST, 0)
-            val elapsed2 = System.currentTimeMillis() - CacheBox.getLong(TIME_LOCAL, 0)
+            val elapsed1 = deviceClock.elapsedRealtime() - CacheBox.getLong(TIME_LAST, 0)
+            val elapsed2 = deviceClock.currentTimeMillis() - CacheBox.getLong(TIME_LOCAL, 0)
             val gap = (elapsed1 - elapsed2).absoluteValue
             if (elapsed1 < 0 || elapsed1 > UPDATE_TIME || gap > 1000) {
                 if (sync) return@launch
@@ -75,9 +75,9 @@ internal object EarthTimeEngine {
             val fraction = ByteBuffer.wrap(response, 44, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
             val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
-            val offset = timeInMillis - System.currentTimeMillis()
-            CacheBox.putLong(TIME_LOCAL, System.currentTimeMillis())
-            CacheBox.putLong(TIME_LAST, SystemClock.elapsedRealtime())
+            val offset = timeInMillis - deviceClock.currentTimeMillis()
+            CacheBox.putLong(TIME_LOCAL, deviceClock.currentTimeMillis())
+            CacheBox.putLong(TIME_LAST, deviceClock.elapsedRealtime())
             CacheBox.putLong(TIME_OFFSET, offset)
             InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
         }.getOrElse {

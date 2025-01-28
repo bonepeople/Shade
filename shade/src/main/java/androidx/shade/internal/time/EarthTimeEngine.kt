@@ -3,6 +3,7 @@ package androidx.shade.internal.time
 import androidx.shade.util.CacheBox
 import androidx.shade.util.InternalLogUtil
 import com.bonepeople.android.widget.CoroutinesHolder
+import com.bonepeople.android.widget.util.AppGson
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.net.DatagramPacket
@@ -14,25 +15,24 @@ import kotlin.math.absoluteValue
 
 internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
-    private const val TIME_OFFSET = "androidx.shade.EarthTime.offset"
-    private const val TIME_LAST = "androidx.shade.EarthTime.lastTime"
-    private const val TIME_LOCAL = "androidx.shade.EarthTime.localTime"
+    internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private var sync = false
     internal var deviceClock: DeviceClock = SystemDeviceClock
 
     fun now(): Long {
-        val offset = CacheBox.getLong(TIME_OFFSET, 0)
-        val systemTime = deviceClock.currentTimeMillis()
+        val snapshot = getTimeSnapshot()
+        val deviceWallClockMillis = deviceClock.currentTimeMillis()
         syncTime()
-        return systemTime + offset
+        return deviceWallClockMillis + snapshot.networkTimeOffsetMillis
     }
 
     private fun syncTime() {
         CoroutinesHolder.io.launch {
-            val elapsed1 = deviceClock.elapsedRealtime() - CacheBox.getLong(TIME_LAST, 0)
-            val elapsed2 = deviceClock.currentTimeMillis() - CacheBox.getLong(TIME_LOCAL, 0)
-            val gap = (elapsed1 - elapsed2).absoluteValue
-            if (elapsed1 < 0 || elapsed1 > UPDATE_TIME || gap > 1000) {
+            val snapshot = getTimeSnapshot()
+            val elapsedRealtimeSinceSyncMillis = deviceClock.elapsedRealtime() - snapshot.elapsedRealtimeAtSyncMillis
+            val wallClockElapsedSinceSyncMillis = deviceClock.currentTimeMillis() - snapshot.deviceWallClockAtSyncMillis
+            val clockDriftMillis = (elapsedRealtimeSinceSyncMillis - wallClockElapsedSinceSyncMillis).absoluteValue
+            if (elapsedRealtimeSinceSyncMillis !in 0..UPDATE_TIME || clockDriftMillis > 1000) {
                 if (sync) return@launch
                 sync = true
                 InternalLogUtil.verbose("EarthTime.syncTime")
@@ -55,6 +55,11 @@ internal object EarthTimeEngine {
         }
     }
 
+    private fun getTimeSnapshot(): TimeSnapshot {
+        val json = CacheBox.getString(TIME_SNAPSHOT, "{}")
+        return AppGson.toObject(json)
+    }
+
     private fun getTimeByNTP(server: String) {
         runCatching {
             val socket = DatagramSocket()
@@ -75,10 +80,13 @@ internal object EarthTimeEngine {
             val fraction = ByteBuffer.wrap(response, 44, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
             val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
-            val offset = timeInMillis - deviceClock.currentTimeMillis()
-            CacheBox.putLong(TIME_LOCAL, deviceClock.currentTimeMillis())
-            CacheBox.putLong(TIME_LAST, deviceClock.elapsedRealtime())
-            CacheBox.putLong(TIME_OFFSET, offset)
+            val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
+            val snapshot = TimeSnapshot(
+                deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
+                elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime(),
+                networkTimeOffsetMillis = timeInMillis - deviceWallClockAtSyncMillis,
+            )
+            CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(snapshot))
             InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
         }.getOrElse {
             InternalLogUtil.verbose("EarthTime.getTimeByNTP failure from $server => ${it.message}")

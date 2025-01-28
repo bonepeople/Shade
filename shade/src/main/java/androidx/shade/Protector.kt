@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.shade.data.Config
 import androidx.shade.data.ConfigRequest
+import androidx.shade.internal.time.EarthTimeDataMigrate
 import androidx.shade.net.DNSChecker
 import androidx.shade.net.Remote
 import androidx.shade.strings.ShadeString
@@ -27,6 +28,7 @@ import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 @Suppress("Unused")
@@ -165,6 +167,7 @@ object Protector {
 
     class StartUp : Initializer<Protector> {
         override fun create(context: Context): Protector {
+            runBlocking { EarthTimeDataMigrate.migrateData() }
             context.registerReceiver(TimeChangeReceiver(), IntentFilter("android.intent.action.TIME_SET"))
             register()
             return Protector

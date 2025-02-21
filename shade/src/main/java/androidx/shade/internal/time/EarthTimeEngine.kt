@@ -11,6 +11,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.absoluteValue
 
 internal object EarthTimeEngine {
@@ -18,19 +19,20 @@ internal object EarthTimeEngine {
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private var sync = false
     internal var deviceClock: DeviceClock = SystemDeviceClock
+    private val snapshot = AtomicReference(loadTimeSnapshot())
 
     fun now(): Long {
-        val snapshot = getTimeSnapshot()
+        val currentSnapshot = snapshot.get()
         val deviceWallClockMillis = deviceClock.currentTimeMillis()
         syncTime()
-        return deviceWallClockMillis + snapshot.networkTimeOffsetMillis
+        return deviceWallClockMillis + currentSnapshot.networkTimeOffsetMillis
     }
 
     private fun syncTime() {
         CoroutinesHolder.io.launch {
-            val snapshot = getTimeSnapshot()
-            val elapsedRealtimeSinceSyncMillis = deviceClock.elapsedRealtime() - snapshot.elapsedRealtimeAtSyncMillis
-            val wallClockElapsedSinceSyncMillis = deviceClock.currentTimeMillis() - snapshot.deviceWallClockAtSyncMillis
+            val currentSnapshot = snapshot.get()
+            val elapsedRealtimeSinceSyncMillis = deviceClock.elapsedRealtime() - currentSnapshot.elapsedRealtimeAtSyncMillis
+            val wallClockElapsedSinceSyncMillis = deviceClock.currentTimeMillis() - currentSnapshot.deviceWallClockAtSyncMillis
             val clockDriftMillis = (elapsedRealtimeSinceSyncMillis - wallClockElapsedSinceSyncMillis).absoluteValue
             if (elapsedRealtimeSinceSyncMillis !in 0..UPDATE_TIME || clockDriftMillis > 1000) {
                 if (sync) return@launch
@@ -55,7 +57,7 @@ internal object EarthTimeEngine {
         }
     }
 
-    private fun getTimeSnapshot(): TimeSnapshot {
+    private fun loadTimeSnapshot(): TimeSnapshot {
         val json = CacheBox.getString(TIME_SNAPSHOT, "{}")
         return AppGson.toObject(json)
     }
@@ -81,12 +83,13 @@ internal object EarthTimeEngine {
             val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
             val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
-            val snapshot = TimeSnapshot(
+            val newSnapshot = TimeSnapshot(
                 deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
                 elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime(),
                 networkTimeOffsetMillis = timeInMillis - deviceWallClockAtSyncMillis,
             )
-            CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(snapshot))
+            snapshot.set(newSnapshot)
+            CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
             InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
         }.getOrElse {
             InternalLogUtil.verbose("EarthTime.getTimeByNTP failure from $server => ${it.message}")

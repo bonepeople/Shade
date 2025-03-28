@@ -33,6 +33,7 @@ object EarthTime {
             if (elapsed1 < 0 || elapsed1 > UPDATE_TIME || gap > 1000) {
                 if (sync) return@launch
                 sync = true
+                InternalLog.log("EarthTime.syncTime")
                 coroutineScope {
                     launch {
                         getTimeByNTP("time.google.com")
@@ -76,6 +77,9 @@ object EarthTime {
             CacheBox.putLong(TIME_LOCAL, System.currentTimeMillis())
             CacheBox.putLong(TIME_LAST, SystemClock.elapsedRealtime())
             CacheBox.putLong(TIME_OFFSET, offset)
+            InternalLog.log("EarthTime.getTimeByNTP success from $server")
+        }.getOrElse {
+            InternalLog.log("EarthTime.getTimeByNTP failure from $server => ${it.message}")
         }
     }
 }

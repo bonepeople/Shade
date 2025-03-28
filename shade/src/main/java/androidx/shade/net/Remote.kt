@@ -16,7 +16,7 @@ import io.ktor.client.request.*
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
-    private const val publicKey = """
+    const val publicKey = """
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOQ2bW3rWdTuKXtc6yEzHNYKWcngICDj
         FvCZ4Slzym5SApnz4GOiyXKCAsuEy+gNK3VJioR2wTA6MLgXW+FdgzGOT+pgkRb0htJcrlTGer1K
         VVYTKG2ds8q7x8/cZbhVanluG9rksPQTnVKDLqlsbfrk1T2ZQUE8BVA2wuN8WsEcOzmMckH4/2Wi
@@ -25,7 +25,7 @@ internal object Remote {
         nONMoQIDAQAB
     """
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
-    private val host by lazy { AppEncrypt.decryptByAES("aSnDWoISi7G995xCpEzVOP57p1d3ZFrH3yUULbWsZT5P1hYLoTJyH5iwNJ1tyWDK", publicKey, "") }
+    private val host by lazy { DNSChecker.getHost() }
     private val client: HttpClient by lazy {
         HttpClient(Android) {
             engine {

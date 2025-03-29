@@ -23,9 +23,21 @@ internal object EarthTimeEngine {
 
     fun now(): Long {
         val currentSnapshot = snapshot.get()
-        val deviceWallClockMillis = deviceClock.currentTimeMillis()
+        val elapsedRealtimeMillis = deviceClock.elapsedRealtime()
         syncTime()
-        return deviceWallClockMillis + currentSnapshot.networkTimeOffsetMillis
+        val elapsedRealtimeSinceSyncMillis = elapsedRealtimeMillis - currentSnapshot.elapsedRealtimeAtSyncMillis
+        val mayHaveRebooted = elapsedRealtimeSinceSyncMillis < 0
+        return when {
+            // Unsynchronized
+            currentSnapshot.deviceWallClockAtSyncMillis <= 0 -> deviceClock.currentTimeMillis() + currentSnapshot.networkTimeOffsetMillis
+            // Possible device reboot
+            mayHaveRebooted -> {
+                // This heuristic cannot detect a reboot if the current uptime has already exceeded the persisted elapsed-realtime value.
+                deviceClock.currentTimeMillis() + currentSnapshot.networkTimeOffsetMillis
+            }
+            // Normal
+            else -> currentSnapshot.deviceWallClockAtSyncMillis + currentSnapshot.networkTimeOffsetMillis + elapsedRealtimeSinceSyncMillis
+        }
     }
 
     private fun syncTime() {

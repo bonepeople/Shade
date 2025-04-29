@@ -11,13 +11,14 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.absoluteValue
 
 internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
-    private var sync = false
+    private val sync = AtomicBoolean(false)
     internal var deviceClock: DeviceClock = SystemDeviceClock
     private val snapshot = AtomicReference(loadTimeSnapshot())
 
@@ -47,24 +48,26 @@ internal object EarthTimeEngine {
             val wallClockElapsedSinceSyncMillis = deviceClock.currentTimeMillis() - currentSnapshot.deviceWallClockAtSyncMillis
             val clockDriftMillis = (elapsedRealtimeSinceSyncMillis - wallClockElapsedSinceSyncMillis).absoluteValue
             if (elapsedRealtimeSinceSyncMillis !in 0..UPDATE_TIME || clockDriftMillis > 1000) {
-                if (sync) return@launch
-                sync = true
-                InternalLogUtil.verbose("EarthTime.syncTime")
-                coroutineScope {
-                    launch {
-                        getTimeByNTP("time.google.com")
+                if (!sync.compareAndSet(false, true)) return@launch
+                try {
+                    InternalLogUtil.verbose("EarthTime.syncTime")
+                    coroutineScope {
+                        launch {
+                            getTimeByNTP("time.google.com")
+                        }
+                        launch {
+                            getTimeByNTP("time.apple.com")
+                        }
+                        launch {
+                            getTimeByNTP("time.windows.com")
+                        }
+                        launch {
+                            getTimeByNTP("pool.ntp.org")
+                        }
                     }
-                    launch {
-                        getTimeByNTP("time.apple.com")
-                    }
-                    launch {
-                        getTimeByNTP("time.windows.com")
-                    }
-                    launch {
-                        getTimeByNTP("pool.ntp.org")
-                    }
+                } finally {
+                    sync.set(false)
                 }
-                sync = false
             }
         }
     }

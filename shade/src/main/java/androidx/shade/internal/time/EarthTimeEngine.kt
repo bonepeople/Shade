@@ -12,6 +12,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.absoluteValue
 
@@ -19,13 +20,14 @@ internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private val sync = AtomicBoolean(false)
+    private val nextSyncCheckElapsedRealtimeMillis = AtomicLong(0)
     internal var deviceClock: DeviceClock = SystemDeviceClock
     private val snapshot = AtomicReference(loadTimeSnapshot())
 
     fun now(): Long {
         val currentSnapshot = snapshot.get()
         val elapsedRealtimeMillis = deviceClock.elapsedRealtime()
-        syncTime()
+        if (elapsedRealtimeMillis >= nextSyncCheckElapsedRealtimeMillis.get() && sync.compareAndSet(false, true)) syncTime()
         val elapsedRealtimeSinceSyncMillis = elapsedRealtimeMillis - currentSnapshot.elapsedRealtimeAtSyncMillis
         val mayHaveRebooted = elapsedRealtimeSinceSyncMillis < 0
         return when {
@@ -48,28 +50,29 @@ internal object EarthTimeEngine {
             val wallClockElapsedSinceSyncMillis = deviceClock.currentTimeMillis() - currentSnapshot.deviceWallClockAtSyncMillis
             val clockDriftMillis = (elapsedRealtimeSinceSyncMillis - wallClockElapsedSinceSyncMillis).absoluteValue
             if (elapsedRealtimeSinceSyncMillis !in 0..UPDATE_TIME || clockDriftMillis > 1000) {
-                if (!sync.compareAndSet(false, true)) return@launch
-                try {
-                    InternalLogUtil.verbose("EarthTime.syncTime")
-                    coroutineScope {
-                        launch {
-                            getTimeByNTP("time.google.com")
-                        }
-                        launch {
-                            getTimeByNTP("time.apple.com")
-                        }
-                        launch {
-                            getTimeByNTP("time.windows.com")
-                        }
-                        launch {
-                            getTimeByNTP("pool.ntp.org")
-                        }
+                InternalLogUtil.verbose("EarthTime.syncTime")
+                coroutineScope {
+                    launch {
+                        getTimeByNTP("time.google.com")
                     }
-                } finally {
-                    sync.set(false)
+                    launch {
+                        getTimeByNTP("time.apple.com")
+                    }
+                    launch {
+                        getTimeByNTP("time.windows.com")
+                    }
+                    launch {
+                        getTimeByNTP("pool.ntp.org")
+                    }
                 }
+                val updatedSnapshot = snapshot.get()
+                if (updatedSnapshot !== currentSnapshot) {
+                    nextSyncCheckElapsedRealtimeMillis.set(updatedSnapshot.elapsedRealtimeAtSyncMillis + UPDATE_TIME)
+                }
+            } else {
+                nextSyncCheckElapsedRealtimeMillis.set(currentSnapshot.elapsedRealtimeAtSyncMillis + UPDATE_TIME)
             }
-        }
+        }.invokeOnCompletion { sync.set(false) }
     }
 
     private fun loadTimeSnapshot(): TimeSnapshot {

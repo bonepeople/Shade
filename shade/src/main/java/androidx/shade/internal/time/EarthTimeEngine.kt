@@ -18,6 +18,7 @@ import kotlin.math.absoluteValue
 
 internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
+    private const val NTP_RECEIVE_TIMEOUT_MILLIS = 10 * 1000
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private val sync = AtomicBoolean(false)
     private val nextSyncCheckElapsedRealtimeMillis = AtomicLong(0)
@@ -82,33 +83,34 @@ internal object EarthTimeEngine {
 
     private fun getTimeByNTP(server: String) {
         runCatching {
-            val socket = DatagramSocket()
-            socket.soTimeout = 10 * 1000
+            DatagramSocket().use { datagramSocket ->
+                datagramSocket.soTimeout = NTP_RECEIVE_TIMEOUT_MILLIS
 
-            val address = InetAddress.getByName(server)
-            val request = ByteArray(48)
-            request[0] = 27.toByte()
-            val packet = DatagramPacket(request, request.size, address, 123)
-            socket.send(packet)
+                val address = InetAddress.getByName(server)
+                datagramSocket.connect(address, 123)
+                val request = ByteArray(48)
+                request[0] = 27.toByte()
+                val packet = DatagramPacket(request, request.size)
+                datagramSocket.send(packet)
 
-            val response = ByteArray(48)
-            val responsePacket = DatagramPacket(response, response.size)
-            socket.receive(responsePacket)
-            socket.close()
+                val response = ByteArray(48)
+                val responsePacket = DatagramPacket(response, response.size)
+                datagramSocket.receive(responsePacket)
 
-            val seconds = ByteBuffer.wrap(response, 40, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
-            val fraction = ByteBuffer.wrap(response, 44, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
-            val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
+                val seconds = ByteBuffer.wrap(response, 40, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
+                val fraction = ByteBuffer.wrap(response, 44, 4).order(ByteOrder.BIG_ENDIAN).getInt().toLong() and 0xffffffffL
+                val timeInMillis = (seconds - 2208988800L) * 1000 + fraction * 1000L / 0x100000000L
 
-            val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
-            val newSnapshot = TimeSnapshot(
-                deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
-                elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime(),
-                networkTimeOffsetMillis = timeInMillis - deviceWallClockAtSyncMillis,
-            )
-            snapshot.set(newSnapshot)
-            CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
-            InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
+                val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
+                val newSnapshot = TimeSnapshot(
+                    deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
+                    elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime(),
+                    networkTimeOffsetMillis = timeInMillis - deviceWallClockAtSyncMillis,
+                )
+                snapshot.set(newSnapshot)
+                CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
+                InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
+            }
         }.getOrElse {
             InternalLogUtil.verbose("EarthTime.getTimeByNTP failure from $server => ${it.message}")
         }

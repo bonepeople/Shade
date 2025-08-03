@@ -9,8 +9,6 @@ import kotlinx.coroutines.launch
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -20,8 +18,6 @@ internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
     private const val NTP_PACKET_SIZE = 48
     private const val NTP_RECEIVE_TIMEOUT_MILLIS = 10 * 1000
-    private const val NTP_TIMESTAMP_OFFSET_SECONDS = 2208988800L
-    private const val NTP_TIMESTAMP_FRACTION_SCALE = 0x100000000L
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private val sync = AtomicBoolean(false)
     private val nextSyncCheckElapsedRealtimeMillis = AtomicLong(0)
@@ -93,22 +89,40 @@ internal object EarthTimeEngine {
                 datagramSocket.connect(address, 123)
                 val request = ByteArray(NTP_PACKET_SIZE)
                 request[0] = 27.toByte()
-                writeNtpTimestamp(request, deviceClock.currentTimeMillis())
+                val requestTimeMillis = deviceClock.currentTimeMillis()
+                NtpTimeCalculator.writeTransmitTimestamp(request, requestTimeMillis)
                 val requestTransmitTimestamp = request.copyOfRange(40, NTP_PACKET_SIZE)
                 val packet = DatagramPacket(request, request.size)
+                val requestElapsedRealtimeMillis = deviceClock.elapsedRealtime()
                 datagramSocket.send(packet)
 
                 val response = ByteArray(NTP_PACKET_SIZE)
                 val responsePacket = DatagramPacket(response, response.size)
                 datagramSocket.receive(responsePacket)
+                val responseElapsedRealtimeMillis = deviceClock.elapsedRealtime()
                 validateNtpResponse(responsePacket, requestTransmitTimestamp)
 
-                val timeInMillis = readNtpTimestamp(response, 40)
+                val clientElapsedMillis = NtpTimeCalculator.subtractExact(responseElapsedRealtimeMillis, requestElapsedRealtimeMillis)
+                require(clientElapsedMillis >= 0) { "elapsed realtime moved backwards" }
+                val responseTimeMillis = NtpTimeCalculator.addExact(requestTimeMillis, clientElapsedMillis)
+                val receiveTimeMillis = NtpTimeCalculator.readTimestamp(response, 32, responseTimeMillis)
+                val transmitTimeMillis = NtpTimeCalculator.readTimestamp(response, 40, responseTimeMillis)
+                val serverProcessingMillis = NtpTimeCalculator.subtractExact(transmitTimeMillis, receiveTimeMillis)
+                require(serverProcessingMillis >= 0) { "transmit timestamp precedes receive timestamp" }
+                val roundTripMillis = NtpTimeCalculator.calculateRoundTripMillis(clientElapsedMillis, serverProcessingMillis)
+                require(roundTripMillis >= 0) { "invalid round trip: $roundTripMillis ms" }
+                val offsetMillis = NtpTimeCalculator.calculateOffsetMillis(requestTimeMillis, receiveTimeMillis, transmitTimeMillis, responseTimeMillis)
+                val networkTimeAtResponseMillis = NtpTimeCalculator.addExact(responseTimeMillis, offsetMillis)
+
                 val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
+                val elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime()
+                val elapsedRealtimeSinceResponseMillis = NtpTimeCalculator.subtractExact(elapsedRealtimeAtSyncMillis, responseElapsedRealtimeMillis)
+                require(elapsedRealtimeSinceResponseMillis >= 0) { "elapsed realtime moved backwards" }
+                val networkTimeAtSyncMillis = NtpTimeCalculator.addExact(networkTimeAtResponseMillis, elapsedRealtimeSinceResponseMillis)
                 val newSnapshot = TimeSnapshot(
                     deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
-                    elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime(),
-                    networkTimeOffsetMillis = timeInMillis - deviceWallClockAtSyncMillis,
+                    elapsedRealtimeAtSyncMillis = elapsedRealtimeAtSyncMillis,
+                    networkTimeOffsetMillis = NtpTimeCalculator.subtractExact(networkTimeAtSyncMillis, deviceWallClockAtSyncMillis),
                 )
                 snapshot.set(newSnapshot)
                 CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
@@ -136,24 +150,6 @@ internal object EarthTimeEngine {
 
         require(!isNtpTimestampZero(response, 32)) { "missing receive timestamp" }
         require(!isNtpTimestampZero(response, 40)) { "missing transmit timestamp" }
-        val receiveTimeMillis = readNtpTimestamp(response, 32)
-        val transmitTimeMillis = readNtpTimestamp(response, 40)
-        require(transmitTimeMillis >= receiveTimeMillis) { "transmit timestamp precedes receive timestamp" }
-    }
-
-    private fun writeNtpTimestamp(target: ByteArray, timeInMillis: Long) {
-        val seconds = timeInMillis / 1000 + NTP_TIMESTAMP_OFFSET_SECONDS
-        val fraction = timeInMillis % 1000 * NTP_TIMESTAMP_FRACTION_SCALE / 1000
-        ByteBuffer.wrap(target, 40, 8).order(ByteOrder.BIG_ENDIAN)
-            .putInt(seconds.toInt())
-            .putInt(fraction.toInt())
-    }
-
-    private fun readNtpTimestamp(source: ByteArray, offset: Int): Long {
-        val buffer = ByteBuffer.wrap(source, offset, 8).order(ByteOrder.BIG_ENDIAN)
-        val seconds = buffer.int.toLong() and 0xffffffffL
-        val fraction = buffer.int.toLong() and 0xffffffffL
-        return (seconds - NTP_TIMESTAMP_OFFSET_SECONDS) * 1000 + fraction * 1000L / NTP_TIMESTAMP_FRACTION_SCALE
     }
 
     private fun isNtpTimestampZero(source: ByteArray, offset: Int): Boolean = (offset until offset + 8).all { source[it] == 0.toByte() }

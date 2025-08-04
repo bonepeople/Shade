@@ -18,6 +18,7 @@ internal object EarthTimeEngine {
     private const val UPDATE_TIME = 12 * 60 * 60 * 1000L //12 hours
     private const val NTP_PACKET_SIZE = 48
     private const val NTP_RECEIVE_TIMEOUT_MILLIS = 10 * 1000
+    private val NTP_SERVERS = listOf("time.google.com", "time.apple.com", "time.windows.com", "pool.ntp.org")
     internal const val TIME_SNAPSHOT = "androidx.shade.internal.time.EarthTimeEngine.snapshot"
     private val sync = AtomicBoolean(false)
     private val nextSyncCheckElapsedRealtimeMillis = AtomicLong(0)
@@ -52,17 +53,18 @@ internal object EarthTimeEngine {
             if (elapsedRealtimeSinceSyncMillis !in 0..UPDATE_TIME || clockDriftMillis > 1000) {
                 InternalLogUtil.verbose("EarthTime.syncTime")
                 coroutineScope {
-                    launch {
-                        getTimeByNTP("time.google.com")
-                    }
-                    launch {
-                        getTimeByNTP("time.apple.com")
-                    }
-                    launch {
-                        getTimeByNTP("time.windows.com")
-                    }
-                    launch {
-                        getTimeByNTP("pool.ntp.org")
+                    NTP_SERVERS.forEach { server ->
+                        launch {
+                            runCatching {
+                                val newSnapshot = getTimeByNTP(server)
+                                snapshot.set(newSnapshot)
+                                CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
+                            }.onSuccess {
+                                InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
+                            }.onFailure {
+                                InternalLogUtil.verbose("EarthTime.getTimeByNTP failure from $server => ${it.message}")
+                            }
+                        }
                     }
                 }
                 val updatedSnapshot = snapshot.get()
@@ -80,57 +82,49 @@ internal object EarthTimeEngine {
         return AppGson.toObject(json)
     }
 
-    private fun getTimeByNTP(server: String) {
-        runCatching {
-            DatagramSocket().use { datagramSocket ->
-                datagramSocket.soTimeout = NTP_RECEIVE_TIMEOUT_MILLIS
+    private fun getTimeByNTP(server: String): TimeSnapshot {
+        return DatagramSocket().use { datagramSocket ->
+            datagramSocket.soTimeout = NTP_RECEIVE_TIMEOUT_MILLIS
 
-                val address = InetAddress.getByName(server)
-                datagramSocket.connect(address, 123)
-                val request = ByteArray(NTP_PACKET_SIZE)
-                request[0] = 27.toByte()
-                val requestTimeMillis = deviceClock.currentTimeMillis()
-                NtpTimeCalculator.writeTransmitTimestamp(request, requestTimeMillis)
-                val requestTransmitTimestamp = request.copyOfRange(40, NTP_PACKET_SIZE)
-                val packet = DatagramPacket(request, request.size)
-                val requestElapsedRealtimeMillis = deviceClock.elapsedRealtime()
-                datagramSocket.send(packet)
+            val address = InetAddress.getByName(server)
+            datagramSocket.connect(address, 123)
+            val request = ByteArray(NTP_PACKET_SIZE)
+            request[0] = 27.toByte()
+            val requestTimeMillis = deviceClock.currentTimeMillis()
+            NtpTimeCalculator.writeTransmitTimestamp(request, requestTimeMillis)
+            val requestTransmitTimestamp = request.copyOfRange(40, NTP_PACKET_SIZE)
+            val packet = DatagramPacket(request, request.size)
+            val requestElapsedRealtimeMillis = deviceClock.elapsedRealtime()
+            datagramSocket.send(packet)
 
-                val response = ByteArray(NTP_PACKET_SIZE)
-                val responsePacket = DatagramPacket(response, response.size)
-                datagramSocket.receive(responsePacket)
-                val responseElapsedRealtimeMillis = deviceClock.elapsedRealtime()
-                validateNtpResponse(responsePacket, requestTransmitTimestamp)
+            val response = ByteArray(NTP_PACKET_SIZE)
+            val responsePacket = DatagramPacket(response, response.size)
+            datagramSocket.receive(responsePacket)
+            val responseElapsedRealtimeMillis = deviceClock.elapsedRealtime()
+            validateNtpResponse(responsePacket, requestTransmitTimestamp)
 
-                val clientElapsedMillis = NtpTimeCalculator.subtractExact(responseElapsedRealtimeMillis, requestElapsedRealtimeMillis)
-                require(clientElapsedMillis >= 0) { "elapsed realtime moved backwards" }
-                val responseTimeMillis = NtpTimeCalculator.addExact(requestTimeMillis, clientElapsedMillis)
-                val receiveTimeMillis = NtpTimeCalculator.readTimestamp(response, 32, responseTimeMillis)
-                val transmitTimeMillis = NtpTimeCalculator.readTimestamp(response, 40, responseTimeMillis)
-                val serverProcessingMillis = NtpTimeCalculator.subtractExact(transmitTimeMillis, receiveTimeMillis)
-                require(serverProcessingMillis >= 0) { "transmit timestamp precedes receive timestamp" }
-                val roundTripMillis = NtpTimeCalculator.calculateRoundTripMillis(clientElapsedMillis, serverProcessingMillis)
-                require(roundTripMillis >= 0) { "invalid round trip: $roundTripMillis ms" }
-                val offsetMillis = NtpTimeCalculator.calculateOffsetMillis(requestTimeMillis, receiveTimeMillis, transmitTimeMillis, responseTimeMillis)
-                val networkTimeAtResponseMillis = NtpTimeCalculator.addExact(responseTimeMillis, offsetMillis)
+            val clientElapsedMillis = NtpTimeCalculator.subtractExact(responseElapsedRealtimeMillis, requestElapsedRealtimeMillis)
+            require(clientElapsedMillis >= 0) { "elapsed realtime moved backwards" }
+            val responseTimeMillis = NtpTimeCalculator.addExact(requestTimeMillis, clientElapsedMillis)
+            val receiveTimeMillis = NtpTimeCalculator.readTimestamp(response, 32, responseTimeMillis)
+            val transmitTimeMillis = NtpTimeCalculator.readTimestamp(response, 40, responseTimeMillis)
+            val serverProcessingMillis = NtpTimeCalculator.subtractExact(transmitTimeMillis, receiveTimeMillis)
+            require(serverProcessingMillis >= 0) { "transmit timestamp precedes receive timestamp" }
+            val roundTripMillis = NtpTimeCalculator.calculateRoundTripMillis(clientElapsedMillis, serverProcessingMillis)
+            require(roundTripMillis >= 0) { "invalid round trip: $roundTripMillis ms" }
+            val offsetMillis = NtpTimeCalculator.calculateOffsetMillis(requestTimeMillis, receiveTimeMillis, transmitTimeMillis, responseTimeMillis)
+            val networkTimeAtResponseMillis = NtpTimeCalculator.addExact(responseTimeMillis, offsetMillis)
 
-                val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
-                val elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime()
-                val elapsedRealtimeSinceResponseMillis = NtpTimeCalculator.subtractExact(elapsedRealtimeAtSyncMillis, responseElapsedRealtimeMillis)
-                require(elapsedRealtimeSinceResponseMillis >= 0) { "elapsed realtime moved backwards" }
-                val networkTimeAtSyncMillis = NtpTimeCalculator.addExact(networkTimeAtResponseMillis, elapsedRealtimeSinceResponseMillis)
-                val newSnapshot = TimeSnapshot(
-                    deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
-                    elapsedRealtimeAtSyncMillis = elapsedRealtimeAtSyncMillis,
-                    networkTimeOffsetMillis = NtpTimeCalculator.subtractExact(networkTimeAtSyncMillis, deviceWallClockAtSyncMillis),
-                )
-                snapshot.set(newSnapshot)
-                CacheBox.putString(TIME_SNAPSHOT, AppGson.toJson(newSnapshot))
-            }
-        }.onSuccess {
-            InternalLogUtil.verbose("EarthTime.getTimeByNTP success from $server")
-        }.onFailure {
-            InternalLogUtil.verbose("EarthTime.getTimeByNTP failure from $server => ${it.message}")
+            val deviceWallClockAtSyncMillis = deviceClock.currentTimeMillis()
+            val elapsedRealtimeAtSyncMillis = deviceClock.elapsedRealtime()
+            val elapsedRealtimeSinceResponseMillis = NtpTimeCalculator.subtractExact(elapsedRealtimeAtSyncMillis, responseElapsedRealtimeMillis)
+            require(elapsedRealtimeSinceResponseMillis >= 0) { "elapsed realtime moved backwards" }
+            val networkTimeAtSyncMillis = NtpTimeCalculator.addExact(networkTimeAtResponseMillis, elapsedRealtimeSinceResponseMillis)
+            TimeSnapshot(
+                deviceWallClockAtSyncMillis = deviceWallClockAtSyncMillis,
+                elapsedRealtimeAtSyncMillis = elapsedRealtimeAtSyncMillis,
+                networkTimeOffsetMillis = NtpTimeCalculator.subtractExact(networkTimeAtSyncMillis, deviceWallClockAtSyncMillis),
+            )
         }
     }
 

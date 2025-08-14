@@ -15,6 +15,15 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <TextView
+                android:id="@+id/textTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="16dp"
+                android:textSize="20sp"
+                tools:text="2026-09-06 16:53:00" />
+
             <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="match_parent"

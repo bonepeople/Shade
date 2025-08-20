@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_start_background"
-    tools:context=".StartActivity">
+    tools:context=".module.start.StartActivity">
 
     <LinearLayout
         android:id="@+id/layoutBrand"

@@ -1,13 +1,13 @@
-package androidx.shade.sample
+package androidx.shade.sample.module.home
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.shade.EarthTime
 import androidx.shade.Lighting
 import androidx.shade.Protector
 import androidx.shade.sample.databinding.ActivityMainBinding
-import androidx.shade.sample.text.MainText
+import androidx.shade.sample.module.home.text.HomeText
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.AppTime
@@ -15,7 +15,7 @@ import com.bonepeople.android.widget.util.AppView.singleClick
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class HomeActivity : FragmentActivity() {
     private val views: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePageText() {
-        val text: MainText = StringResourceManager.get(MainText.templateClass)
+        val text: HomeText = StringResourceManager.get(HomeText.templateClass)
         views.buttonSave.text = text.saveLog
     }
 

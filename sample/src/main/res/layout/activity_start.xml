@@ -28,8 +28,8 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@mipmap/ic_launcher" />
+                android:src="@mipmap/ic_launcher"
+                tools:contentDescription="ShadeSample" />
         </FrameLayout>
 
         <TextView
@@ -37,10 +37,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/app_name"
             android:textColor="@color/white"
             android:textSize="32sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="ShadeSample" />
 
         <TextView
             android:id="@+id/textTagline"
@@ -49,9 +49,9 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:paddingHorizontal="32dp"
-            android:text="@string/start_tagline"
             android:textColor="@color/start_text_secondary"
-            android:textSize="15sp" />
+            android:textSize="15sp"
+            tools:text="A lightweight Android application protection library." />
     </LinearLayout>
 
     <TextView

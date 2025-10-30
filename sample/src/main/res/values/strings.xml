@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">ShadeSample</string>
-    <string name="start_tagline">A lightweight Android application protection library.</string>
-    <string name="start_version_format">Version %s</string>
-    <string name="start_init_error">Initialization failed</string>
 </resources>

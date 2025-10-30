@@ -7,11 +7,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.shade.sample.R
 import androidx.shade.sample.databinding.ActivityStartBinding
 import androidx.shade.sample.module.global.base.BaseActivity
 import androidx.shade.sample.module.home.HomeActivity
+import androidx.shade.sample.module.start.text.StartText
 import com.bonepeople.android.widget.ApplicationHolder
+import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.AppToast
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -28,17 +29,25 @@ class StartActivity : BaseActivity() {
             view.setPadding(systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, systemBarInsets.bottom)
             insets
         }
-        views.textVersion.text = getString(R.string.start_version_format, ApplicationHolder.getVersionName())
+        updatePageText()
         lifecycleScope.launch {
             viewModel.pageState.flowWithLifecycle(lifecycle).distinctUntilChanged().collect { pageState ->
                 when (pageState) {
                     StartViewModel.PageState.Init, StartViewModel.PageState.Loading -> Unit
                     StartViewModel.PageState.Finish -> navigateToMain()
-                    StartViewModel.PageState.Error -> AppToast.show(getString(R.string.start_init_error))
+                    StartViewModel.PageState.Error -> AppToast.show(StringResourceManager.get(StartText.templateClass).initError)
                 }
             }
         }
         viewModel.init()
+    }
+
+    private fun updatePageText() {
+        val text: StartText = StringResourceManager.get(StartText.templateClass)
+        views.imageLogo.contentDescription = text.appName
+        views.textAppName.text = text.appName
+        views.textTagline.text = text.tagline
+        views.textVersion.text = text.versionFormat.format(ApplicationHolder.getVersionName())
     }
 
     private fun navigateToMain() {

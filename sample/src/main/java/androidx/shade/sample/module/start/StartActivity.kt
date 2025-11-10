@@ -3,6 +3,7 @@ package androidx.shade.sample.module.start
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.flowWithLifecycle
@@ -22,6 +23,9 @@ class StartActivity : BaseActivity() {
     private val viewModel: StartViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen().apply {
+            setOnExitAnimationListener { splashScreenView -> splashScreenView.remove() }
+        }
         super.onCreate(savedInstanceState)
         setContentView(views.root)
         ViewCompat.setOnApplyWindowInsetsListener(views.root) { view, insets ->

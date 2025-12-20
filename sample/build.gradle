@@ -31,6 +31,17 @@ android {
     }
 }
 
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        tasks.register("dump${variant.name.capitalize()}Dependencies", DependencyReportTask) { task ->
+            task.group = "dependency-analysis"
+            task.description = "Dump the ${variant.name} variant compile/runtime classpath"
+            task.configurations = [variant.compileConfiguration, variant.runtimeConfiguration] as Set
+            task.outputFile = file("${rootProject.projectDir}/${variant.name}_dependencies.txt")
+        }
+    }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     implementation 'androidx.core:core-ktx:1.6.0'

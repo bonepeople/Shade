@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.shade.sample.databinding.ActivityStartBinding
@@ -28,11 +26,6 @@ class StartActivity : BaseActivity() {
         }
         super.onCreate(savedInstanceState)
         setContentView(views.root)
-        ViewCompat.setOnApplyWindowInsetsListener(views.root) { view, insets ->
-            val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, systemBarInsets.bottom)
-            insets
-        }
         updatePageText()
         lifecycleScope.launch {
             viewModel.pageState.flowWithLifecycle(lifecycle).distinctUntilChanged().collect { pageState ->

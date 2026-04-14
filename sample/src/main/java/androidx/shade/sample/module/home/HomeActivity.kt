@@ -2,8 +2,6 @@ package androidx.shade.sample.module.home
 
 import android.os.Bundle
 import androidx.activity.addCallback
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.shade.EarthTime
 import androidx.shade.Lighting
@@ -26,11 +24,6 @@ class HomeActivity : BaseActivity() {
         onBackPressedDispatcher.addCallback(this) { finishAndRemoveTask() }
         Protector.protect {
             setContentView(views.root)
-            ViewCompat.setOnApplyWindowInsetsListener(views.root) { view, insets ->
-                val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.setPadding(systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, systemBarInsets.bottom)
-                insets
-            }
             views.buttonSave.singleClick { save() }
         }
         updatePageText()

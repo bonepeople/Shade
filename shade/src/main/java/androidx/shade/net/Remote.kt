@@ -25,7 +25,6 @@ internal object Remote {
         nONMoQIDAQAB
     """
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
-    private val host by lazy { DNSChecker.getHost() }
     private val client: HttpClient by lazy {
         HttpClient(CIO) {
             engine {
@@ -36,7 +35,7 @@ internal object Remote {
                 }
             }
             defaultRequest {
-                url(Remote.host)
+                url(DNSChecker.getHost())
             }
             expectSuccess = true
         }

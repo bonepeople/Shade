@@ -10,10 +10,9 @@ import com.bonepeople.android.widget.util.AppMessageDigest
 import com.bonepeople.android.widget.util.AppRandom
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.*
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 internal object Remote {
@@ -28,12 +27,12 @@ internal object Remote {
     private val encryptKey by lazy { AppEncrypt.decodeRSAPublicKey(publicKey) }
     private val host by lazy { DNSChecker.getHost() }
     private val client: HttpClient by lazy {
-        HttpClient(OkHttp) {
+        HttpClient(CIO) {
             engine {
-                config {
-                    connectTimeout(10, TimeUnit.SECONDS)
-                    readTimeout(10, TimeUnit.SECONDS)
-                    writeTimeout(10, TimeUnit.SECONDS)
+                requestTimeout = 10_000
+                endpoint {
+                    connectTimeout = 10_000
+                    socketTimeout = 10_000
                 }
             }
             defaultRequest {

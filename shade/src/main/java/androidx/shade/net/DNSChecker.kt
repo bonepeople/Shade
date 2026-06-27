@@ -9,17 +9,13 @@ import com.bonepeople.android.widget.util.AppData
 import com.bonepeople.android.widget.util.AppEncrypt
 import com.bonepeople.android.widget.util.AppGson
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 internal object DNSChecker {
@@ -34,33 +30,24 @@ internal object DNSChecker {
     private val defaultHostUrl by lazy { AppEncrypt.decryptByRSA(encryptHostUrl, AppEncrypt.decodeRSAPublicKey(Remote.publicKey)) }
     private val configUrl by lazy { AppEncrypt.decryptByRSA(encryptConfigUrl, AppEncrypt.decodeRSAPublicKey(Remote.publicKey)) }
     private val dataStore by lazy { AppData.create(DATA_STORE) }
+    private val trustAllManager = object : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+    }
     private val client: HttpClient by lazy {
-        HttpClient(OkHttp) {
+        HttpClient(CIO) {
             engine {
-                preconfigured = provideUnsafeOkHttpClient()
+                requestTimeout = 30_000
+                endpoint {
+                    connectTimeout = 30_000
+                    socketTimeout = 30_000
+                }
+                https { trustManager = trustAllManager }
             }
             defaultRequest { url("https://www.google.com/") }
             expectSuccess = true
         }
-    }
-
-    private fun provideUnsafeOkHttpClient(): OkHttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        })
-
-        val sslContext = SSLContext.getInstance("SSL").apply {
-            init(null, trustAllCerts, SecureRandom())
-        }
-
-        return OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
     }
 
     fun check() {

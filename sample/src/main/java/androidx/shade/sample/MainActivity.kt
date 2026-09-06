@@ -2,13 +2,17 @@ package androidx.shade.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.shade.EarthTime
 import androidx.shade.Lighting
 import androidx.shade.Protector
 import androidx.shade.sample.databinding.ActivityMainBinding
 import androidx.shade.sample.text.MainText
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.resource.StringResourceManager
+import com.bonepeople.android.widget.util.AppTime
 import com.bonepeople.android.widget.util.AppView.singleClick
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -21,11 +25,21 @@ class MainActivity : AppCompatActivity() {
             views.buttonSave.singleClick { save() }
         }
         updatePageText()
+        startTimeUpdate()
     }
 
     private fun updatePageText() {
         val text: MainText = StringResourceManager.get(MainText.templateClass)
         views.buttonSave.text = text.saveLog
+    }
+
+    private fun startTimeUpdate() {
+        lifecycleScope.launch {
+            while (true) {
+                views.textTime.text = AppTime.formatTime(EarthTime.now())
+                delay(1000)
+            }
+        }
     }
 
     private fun save() {

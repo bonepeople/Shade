@@ -11,9 +11,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.shade.sample.MainActivity
 import androidx.shade.sample.R
 import androidx.shade.sample.databinding.ActivityStartBinding
+import androidx.shade.sample.module.home.HomeActivity
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.util.AppToast
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -51,7 +51,7 @@ class StartActivity : FragmentActivity() {
     }
 
     private fun navigateToMain() {
-        startActivity(Intent(this, MainActivity::class.java))
+        startActivity(Intent(this, HomeActivity::class.java))
         finishAfterTransition()
     }
 }

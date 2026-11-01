@@ -55,7 +55,7 @@ dependencies {
     // AndroidWidget https://github.com/bonepeople/AndroidWidget
     api 'com.github.bonepeople:AndroidWidget:canary-SNAPSHOT'
 
-    compileOnly('com.github.bonepeople:AndroidBase:1.7.0') {
+    compileOnly('com.github.bonepeople:AndroidBase:canary-SNAPSHOT') {
         transitive = false
     }
 

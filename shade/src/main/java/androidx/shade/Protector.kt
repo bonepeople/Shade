@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.shade.data.Config
 import androidx.shade.data.ConfigRequest
+import androidx.shade.internal.UserStateObserver
 import androidx.shade.internal.time.EarthTimeDataMigrate
 import androidx.shade.net.DNSChecker
 import androidx.shade.net.Remote
@@ -20,8 +21,6 @@ import androidx.shade.util.CacheBox
 import androidx.shade.util.InternalLogUtil
 import androidx.shade.util.TimeChangeReceiver
 import androidx.startup.Initializer
-import com.bonepeople.android.localbroadcastutil.LocalBroadcastHelper
-import com.bonepeople.android.localbroadcastutil.LocalBroadcastUtil
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.CoroutinesHolder
 import com.bonepeople.android.widget.resource.StringResourceManager
@@ -33,9 +32,6 @@ import java.io.File
 
 @Suppress("Unused")
 object Protector {
-    private const val USER_LOGIN = "com.bonepeople.android.action.USER_LOGIN"
-    private const val USER_LOGOUT = "com.bonepeople.android.action.USER_LOGOUT"
-    private const val USER_UPDATE = "com.bonepeople.android.action.USER_UPDATE"
     private const val CONFIG = "Protector.config"
     private var config: Config = Config()
     internal val appName by lazy {
@@ -95,15 +91,7 @@ object Protector {
     @SuppressLint("PackageManagerGetSignatures")
     private fun register() {
         InternalLogUtil.verbose("Protector.register")
-        LocalBroadcastHelper.register(null, USER_LOGIN, USER_LOGOUT, USER_UPDATE) {
-            CoroutinesHolder.io.launch {
-                when (it.action) {
-                    USER_LOGIN -> Lighting.c5("shade.user", 1, "login", "")
-                    USER_LOGOUT -> Lighting.c5("shade.user", 2, "logout", "")
-                    USER_UPDATE -> Lighting.c5("shade.user", 3, "update", "")
-                }
-            }
-        }
+        UserStateObserver.register()
         CoroutinesHolder.default.launch {
             EarthTime.now()
             config = AppGson.toObject(CacheBox.getString(CONFIG, "{}"))
@@ -174,7 +162,7 @@ object Protector {
         }
 
         override fun dependencies(): List<Class<out Initializer<*>>> {
-            return listOf(ApplicationHolder.StartUp::class.java, LocalBroadcastUtil.AppInitializer::class.java)
+            return listOf(ApplicationHolder.StartUp::class.java)
         }
     }
 }

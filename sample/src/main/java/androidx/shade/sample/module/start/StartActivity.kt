@@ -4,17 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.shade.sample.databinding.ActivityStartBinding
 import androidx.shade.sample.module.global.base.BaseActivity
 import androidx.shade.sample.module.home.HomeActivity
 import androidx.shade.sample.module.start.text.StartText
+import com.bonepeople.android.base.util.FlowExtension.observeWithLifecycle
 import com.bonepeople.android.widget.ApplicationHolder
 import com.bonepeople.android.widget.resource.StringResourceManager
 import com.bonepeople.android.widget.util.AppToast
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
 class StartActivity : BaseActivity() {
     private val views: ActivityStartBinding by lazy { ActivityStartBinding.inflate(layoutInflater) }
@@ -27,13 +24,11 @@ class StartActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(views.root)
         updatePageText()
-        lifecycleScope.launch {
-            viewModel.pageState.flowWithLifecycle(lifecycle).distinctUntilChanged().collect { pageState ->
-                when (pageState) {
-                    StartViewModel.PageState.Init, StartViewModel.PageState.Loading -> Unit
-                    StartViewModel.PageState.Finish -> navigateToMain()
-                    StartViewModel.PageState.Error -> AppToast.show(StringResourceManager.get(StartText.templateClass).initError)
-                }
+        viewModel.pageState.observeWithLifecycle(this) { pageState ->
+            when (pageState) {
+                StartViewModel.PageState.Init, StartViewModel.PageState.Loading -> Unit
+                StartViewModel.PageState.Finish -> navigateToMain()
+                StartViewModel.PageState.Error -> AppToast.show(StringResourceManager.get(StartText.templateClass).initError)
             }
         }
         viewModel.init()

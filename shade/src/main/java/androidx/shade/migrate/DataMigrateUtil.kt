@@ -1,25 +1,21 @@
 package androidx.shade.migrate
 
 import com.bonepeople.android.widget.ApplicationHolder
+import com.bonepeople.android.widget.CoroutinesHolder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 
 @Suppress("Unused")
 object DataMigrateUtil {
-    private val mutexMap: MutableMap<String, Mutex> = mutableMapOf()
-
     suspend fun migrate(dataId: String, migrateList: List<DataMigrateInfo>): Int {
-        return withContext(Dispatchers.IO) {
-            if (!checkValidName(dataId)) {
-                throw IllegalArgumentException("Invalid name: $dataId")
-            }
-            val migrateMutex = synchronized(DataMigrateUtil) { mutexMap.getOrPut(dataId) { Mutex() } }
-            return@withContext migrateMutex.withLock {
+        if (!checkValidName(dataId)) {
+            throw IllegalArgumentException("Invalid name: $dataId")
+        }
+        return CoroutinesHolder.runSerial(dataId) {
+            withContext(Dispatchers.IO) {
                 var currentVersion = getVersion(dataId)
-                if (migrateList.none { it.range.first == currentVersion }) return@withLock currentVersion
+                if (migrateList.none { it.range.first == currentVersion }) return@withContext currentVersion
 
                 val sortedList = migrateList.sortedWith { o1, o2 ->
                     if (o1.range.first == o2.range.first) {
@@ -35,7 +31,7 @@ object DataMigrateUtil {
                         setVersion(dataId, currentVersion)
                     }
                 }
-                return@withLock currentVersion
+                currentVersion
             }
         }
     }
